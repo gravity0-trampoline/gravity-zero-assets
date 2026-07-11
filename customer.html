@@ -78,7 +78,7 @@
     .gravity-number {
       font-size: 64px;
       font-weight: 700;
-      color: var(--accent);
+      color: #ff69b4;
       line-height: 1;
       margin: 4px 0;
     }
@@ -151,8 +151,8 @@
       padding: 16px 0;
       border-radius: 14px;
       border: none;
-      background: var(--accent);
-      color: #05131a;
+      background: #ff69b4;
+      color: #fff;
       font-size: 16px;
       font-weight: 700;
       cursor: pointer;
@@ -660,7 +660,7 @@
       for (var count = 1; count <= status.maxShareMembers; count++) {
         var btn = document.createElement('button');
         btn.className = 'consume';
-        btn.innerHTML = '<span class="consume-top"><span class="consume-count">' + count + '</span>人</span><span class="consume-bottom">跳ぶ</span>';
+        btn.innerHTML = '<span class="consume-top"><span class="consume-count">' + count + '</span>回</span><span class="consume-bottom">楽しむ</span>';
         btn.disabled = count > status.remainingCount;
         (function (c) {
           btn.addEventListener('click', function () { openConfirm(c); });
@@ -730,7 +730,7 @@
 
     function openConfirm(count) {
       pendingConsumeCount = count;
-      $('confirm-text').textContent = '「' + count + '人」跳ぶでよろしいですか?';
+      $('confirm-text').textContent = '「' + count + '回」楽しむでよろしいですか?';
       $('confirm-overlay').className = 'overlay show';
     }
 
