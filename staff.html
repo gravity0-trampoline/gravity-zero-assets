@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gravity ZERO 回数券発行</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <meta name="apple-mobile-web-app-title" content="G-ZERO 回数券">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0b0e14">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0e14;
+      --panel: #161b26;
+      --accent: #4fd1ff;
+      --text: #e8edf4;
+      --text-dim: #8a93a3;
+      --danger: #ff6b6b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+    h1 {
+      font-size: 18px;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin: 8px 0 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--panel);
+      border-radius: 20px;
+      padding: 24px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #2a3242;
+      background: #0f131c;
+      color: var(--text);
+      font-size: 15px;
+      margin-bottom: 18px;
+    }
+    button.issue {
+      width: 100%;
+      padding: 14px 0;
+      border-radius: 12px;
+      border: none;
+      background: var(--accent);
+      color: #05131a;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.issue:disabled {
+      background: #232a38;
+      color: var(--text-dim);
+      cursor: not-allowed;
+    }
+    .error {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: -8px;
+      margin-bottom: 14px;
+      min-height: 1em;
+    }
+    .result {
+      display: none;
+      text-align: center;
+    }
+    .result.show { display: block; }
+    .result .qr {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      display: inline-block;
+      margin: 12px 0;
+    }
+    .result .qr img { display: block; width: 200px; height: 200px; }
+    .result dl {
+      text-align: left;
+      font-size: 14px;
+      margin: 16px 0;
+    }
+    .result dt { color: var(--text-dim); margin-top: 8px; }
+    .result dd { margin: 2px 0 0; font-weight: 600; }
+    .result .url {
+      word-break: break-all;
+      font-size: 12px;
+      color: var(--text-dim);
+      background: #0f131c;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    button.again {
+      width: 100%;
+      padding: 12px 0;
+      border-radius: 12px;
+      border: 1px solid #2a3242;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+      margin-top: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>GRAVITY ZERO 回数券発行(スタッフ用)</h1>
+
+  <div class="card">
+    <div id="form-view">
+      <label for="purchaser-name">購入者名</label>
+      <input id="purchaser-name" type="text" placeholder="山田 太郎">
+
+      <label for="purchaser-phone">電話番号(任意)</label>
+      <input id="purchaser-phone" type="tel" placeholder="090-1234-5678">
+
+      <div class="error" id="form-error"></div>
+
+      <button class="issue" id="issue-button">発行する</button>
+    </div>
+
+    <div class="result" id="result-view">
+      <div style="text-align:center">
+        <div class="qr"><img id="qr-image" alt="QRコード"></div>
+      </div>
+      <dl>
+        <dt>購入者名</dt><dd id="result-name"></dd>
+        <dt>TicketID</dt><dd id="result-id"></dd>
+        <dt>回数 / 有効期限</dt><dd id="result-count-expiry"></dd>
+      </dl>
+      <div class="url" id="result-url"></div>
+      <button class="again" id="issue-again">続けて発行する</button>
+    </div>
+  </div>
+
+  <script>
+    var API_BASE = 'https://script.google.com/macros/s/AKfycbx22R7ugfVC9Yl_HR0_Z_6lNIv1-AFQ5Y7qooSPtBQhkm93nnArRtL15ohoOTWbdUNa/exec';
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(function () {});
+    }
+
+    function $(id) { return document.getElementById(id); }
+
+    function apiCall(action, params) {
+      var url = new URL(API_BASE);
+      url.searchParams.set('action', action);
+      Object.keys(params || {}).forEach(function (key) {
+        url.searchParams.set(key, params[key]);
+      });
+      return fetch(url.toString())
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.error) throw new Error(data.error);
+          return data;
+        });
+    }
+
+    function formatDate(isoString) {
+      var d = new Date(isoString);
+      return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
+    }
+
+    function showResult(ticket) {
+      $('form-view').style.display = 'none';
+      $('result-view').className = 'result show';
+      $('qr-image').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(ticket.ticketUrl);
+      $('result-name').textContent = ticket.purchaserName;
+      $('result-id').textContent = ticket.ticketId;
+      $('result-count-expiry').textContent = ticket.totalCount + '回 / ' + formatDate(ticket.expiryDate) + 'まで';
+      $('result-url').textContent = ticket.ticketUrl;
+    }
+
+    function resetForm() {
+      $('purchaser-name').value = '';
+      $('purchaser-phone').value = '';
+      $('form-error').textContent = '';
+      $('result-view').className = 'result';
+      $('form-view').style.display = 'block';
+      $('issue-button').disabled = false;
+      $('issue-button').textContent = '発行する';
+    }
+
+    $('issue-button').addEventListener('click', function () {
+      var name = $('purchaser-name').value.trim();
+      var phone = $('purchaser-phone').value.trim();
+      $('form-error').textContent = '';
+
+      if (!name) {
+        $('form-error').textContent = '購入者名を入力してください。';
+        return;
+      }
+
+      $('issue-button').disabled = true;
+      $('issue-button').textContent = '発行中...';
+
+      apiCall('issue', { name: name, phone: phone })
+        .then(function (ticket) {
+          showResult(ticket);
+        })
+        .catch(function (error) {
+          $('form-error').textContent = error.message;
+          $('issue-button').disabled = false;
+          $('issue-button').textContent = '発行する';
+        });
+    });
+
+    $('issue-again').addEventListener('click', resetForm);
+  </script>
+</body>
+</html>
