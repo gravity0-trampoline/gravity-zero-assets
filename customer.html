@@ -51,10 +51,11 @@
       background-size: 250px 250px, 250px 250px, 250px 250px, 250px 250px, 250px 250px, 250px 250px, 250px 250px, 250px 250px, auto, auto, auto;
       background-attachment: fixed;
     }
-    h1 {
-      font-size: 32px;
-      letter-spacing: 0.06em;
-      color: var(--text-dim);
+    .title-logo {
+      display: block;
+      width: 100%;
+      max-width: 360px;
+      height: auto;
       margin: 8px 0 6px;
     }
     .purchaser-name {
@@ -327,7 +328,7 @@
   </style>
 </head>
 <body>
-  <h1>Gravity ZERO 回数券</h1>
+  <img class="title-logo" src="./title-logo.webp" alt="Gravity ZERO 回数券">
   <div class="purchaser-name" id="purchaser-name"></div>
 
   <div class="card" id="main-card">
