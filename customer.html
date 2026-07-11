@@ -159,6 +159,18 @@
       color: var(--text-dim);
       cursor: not-allowed;
     }
+    .share-button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 12px 0;
+      border-radius: 12px;
+      border: 1px solid rgba(180, 140, 255, 0.35);
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+    }
+
     .message {
       margin-top: 16px;
       font-size: 14px;
@@ -317,6 +329,8 @@
     <div class="gauge" id="gauge"></div>
 
     <div class="buttons" id="buttons"></div>
+
+    <button class="share-button" id="share-button" style="display:none">🔗 友達にシェアする</button>
 
     <div class="message" id="message"></div>
   </div>
@@ -654,6 +668,7 @@
       renderGauge(status.currentGravity);
       renderButtons(status);
       renderSpeedClearProgress(status);
+      $('share-button').style.display = status.status === 'active' ? 'block' : 'none';
 
       var message = $('message');
       message.className = 'message';
@@ -697,6 +712,22 @@
         playConfettiEffect(0);
       }
     }
+
+    $('share-button').addEventListener('click', function () {
+      var shareUrl = window.location.href;
+      var btn = $('share-button');
+      if (navigator.share) {
+        navigator.share({ title: 'G-ZERO 回数券', url: shareUrl }).catch(function () {});
+        return;
+      }
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(function () {
+          var original = btn.textContent;
+          btn.textContent = 'コピーしました!';
+          setTimeout(function () { btn.textContent = original; }, 2000);
+        });
+      }
+    });
 
     $('confirm-cancel').addEventListener('click', closeConfirm);
     $('celebrate-close').addEventListener('click', function () {
