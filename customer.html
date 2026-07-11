@@ -123,10 +123,16 @@
       color: var(--text);
       font-size: 20px;
     }
+    .expiry-info {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin: -14px 0 6px;
+    }
+
     .speed-clear-progress {
       font-size: 13px;
       color: var(--accent);
-      margin: -14px 0 20px;
+      margin: -6px 0 20px;
     }
     .buttons {
       display: grid;
@@ -323,6 +329,8 @@
     <div class="remaining">
       重力を振り切るまで あと<strong id="remaining-count">-</strong>回
     </div>
+
+    <div class="expiry-info" id="expiry-info"></div>
 
     <div class="speed-clear-progress" id="speed-clear-progress"></div>
 
@@ -652,6 +660,16 @@
       }
     }
 
+    function renderExpiryInfo(status) {
+      var el = $('expiry-info');
+      if (!status.expiryDate) {
+        el.textContent = '';
+        return;
+      }
+      var d = new Date(status.expiryDate);
+      el.textContent = '有効期限: ' + d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + 'まで';
+    }
+
     function renderSpeedClearProgress(status) {
       var el = $('speed-clear-progress');
       if (status.status !== 'active' || !status.speedClearDeadline) {
@@ -667,6 +685,7 @@
       $('remaining-count').textContent = status.remainingCount;
       renderGauge(status.currentGravity);
       renderButtons(status);
+      renderExpiryInfo(status);
       renderSpeedClearProgress(status);
       $('share-button').style.display = status.status === 'active' ? 'block' : 'none';
 
