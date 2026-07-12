@@ -140,6 +140,9 @@
       color: #ff0000;
       margin: 4px 0 6px;
     }
+    .speed-clear-days {
+      font-size: 2em;
+    }
     .expiry-info {
       font-size: 14px;
       font-weight: 700;
@@ -686,7 +689,7 @@
         return;
       }
       var daysLeft = Math.ceil((new Date(status.speedClearDeadline) - new Date()) / (1000 * 60 * 60 * 24));
-      el.textContent = daysLeft > 0 ? '⚡ スピードクリアまであと' + daysLeft + '日' : '';
+      el.innerHTML = daysLeft > 0 ? '⚡ スピードクリアまであと<span class="speed-clear-days">' + daysLeft + '日</span>' : '';
     }
 
     function toKatakana(text) {
