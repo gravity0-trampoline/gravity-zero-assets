@@ -70,7 +70,7 @@
       font-size: 20px;
       font-weight: 700;
       color: #ffffff;
-      margin-bottom: 20px;
+      margin-bottom: 4px;
     }
     .card {
       width: 100%;
@@ -138,13 +138,13 @@
       font-size: 13px;
       font-weight: 700;
       color: #ff0000;
-      margin: 8px 0 6px;
+      margin: 4px 0 6px;
     }
     .expiry-info {
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 700;
       color: #ff0000;
-      margin: -6px 0 20px;
+      margin: 0 0 20px;
     }
     .buttons {
       display: grid;
@@ -335,14 +335,13 @@
 <body>
   <img class="title-logo" src="./title-logo.jpg" alt="Gravity ZERO 回数券">
   <div class="purchaser-name" id="purchaser-name"></div>
+  <div class="expiry-info" id="expiry-info"></div>
 
   <div class="card" id="main-card">
     <div class="gravity-label">GRAVITY</div>
     <div class="gravity-number" id="gravity-number">-</div>
 
     <div class="speed-clear-progress" id="speed-clear-progress"></div>
-
-    <div class="expiry-info" id="expiry-info"></div>
 
     <div class="gauge" id="gauge"></div>
 
@@ -702,7 +701,7 @@
 
     function renderPurchaserName(status) {
       var el = $('purchaser-name');
-      el.textContent = status.purchaserName ? 'ご利用者: ' + toKatakana(status.purchaserName) + ' 様' : '';
+      el.textContent = status.purchaserName ? toKatakana(status.purchaserName) + ' 様' : '';
     }
 
     function renderStatus(status) {
