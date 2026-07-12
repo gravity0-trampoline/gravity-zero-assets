@@ -140,6 +140,9 @@
       color: #ff0000;
       margin: 4px 0 6px;
     }
+    .speed-clear-label {
+      font-size: 1.2em;
+    }
     .speed-clear-days {
       font-size: 2em;
     }
@@ -689,7 +692,7 @@
         return;
       }
       var daysLeft = Math.ceil((new Date(status.speedClearDeadline) - new Date()) / (1000 * 60 * 60 * 24));
-      el.innerHTML = daysLeft > 0 ? '⚡ スピードクリアまであと<span class="speed-clear-days">' + daysLeft + '日</span>' : '';
+      el.innerHTML = daysLeft > 0 ? '<span class="speed-clear-label">⚡ スピードクリア</span>まであと<span class="speed-clear-days">' + daysLeft + '日</span>' : '';
     }
 
     function toKatakana(text) {
