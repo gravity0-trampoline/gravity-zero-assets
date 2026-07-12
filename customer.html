@@ -134,15 +134,6 @@
       font-weight: 700;
       transform: scale(1.15);
     }
-    .remaining {
-      font-size: 15px;
-      color: #6b5b95;
-      margin-bottom: 20px;
-    }
-    .remaining strong {
-      color: #2d2140;
-      font-size: 20px;
-    }
     .expiry-info {
       font-size: 12px;
       font-weight: 700;
@@ -348,10 +339,6 @@
   <div class="card" id="main-card">
     <div class="gravity-label">GRAVITY</div>
     <div class="gravity-number" id="gravity-number">-</div>
-
-    <div class="remaining">
-      重力を振り切るまで あと<strong id="remaining-count">-</strong>回
-    </div>
 
     <div class="expiry-info" id="expiry-info"></div>
 
@@ -699,8 +686,12 @@
         el.textContent = '';
         return;
       }
-      var daysLeft = Math.ceil((new Date(status.speedClearDeadline) - new Date()) / (1000 * 60 * 60 * 24));
-      el.textContent = daysLeft > 0 ? '⚡ スピードクリアまであと' + daysLeft + '日' : '';
+      var d = new Date(status.speedClearDeadline);
+      if (d - new Date() <= 0) {
+        el.textContent = '';
+        return;
+      }
+      el.textContent = '⚡ スピードクリアまで' + d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日まで!';
     }
 
     function toKatakana(text) {
@@ -716,7 +707,6 @@
 
     function renderStatus(status) {
       $('gravity-number').textContent = status.currentGravity;
-      $('remaining-count').textContent = status.remainingCount;
       renderGauge(status.currentGravity);
       renderButtons(status);
       renderPurchaserName(status);
