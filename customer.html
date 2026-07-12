@@ -134,16 +134,16 @@
       font-weight: 700;
       transform: scale(1.15);
     }
-    .expiry-info {
-      font-size: 12px;
+    .speed-clear-progress {
+      font-size: 13px;
       font-weight: 700;
       color: #ff0000;
       margin: 8px 0 6px;
     }
-
-    .speed-clear-progress {
-      font-size: 13px;
-      color: #7c3aed;
+    .expiry-info {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ff0000;
       margin: -6px 0 20px;
     }
     .buttons {
@@ -340,9 +340,9 @@
     <div class="gravity-label">GRAVITY</div>
     <div class="gravity-number" id="gravity-number">-</div>
 
-    <div class="expiry-info" id="expiry-info"></div>
-
     <div class="speed-clear-progress" id="speed-clear-progress"></div>
+
+    <div class="expiry-info" id="expiry-info"></div>
 
     <div class="gauge" id="gauge"></div>
 
@@ -677,7 +677,7 @@
         return;
       }
       var d = new Date(status.expiryDate);
-      el.textContent = '有効期限: ' + d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + 'まで';
+      el.textContent = 'チケット有効期限: ' + d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + 'まで';
     }
 
     function renderSpeedClearProgress(status) {
