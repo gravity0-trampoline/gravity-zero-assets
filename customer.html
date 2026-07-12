@@ -685,12 +685,8 @@
         el.textContent = '';
         return;
       }
-      var d = new Date(status.speedClearDeadline);
-      if (d - new Date() <= 0) {
-        el.textContent = '';
-        return;
-      }
-      el.textContent = '⚡ スピードクリアまで' + d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日まで!';
+      var daysLeft = Math.ceil((new Date(status.speedClearDeadline) - new Date()) / (1000 * 60 * 60 * 24));
+      el.textContent = daysLeft > 0 ? '⚡ スピードクリアまであと' + daysLeft + '日' : '';
     }
 
     function toKatakana(text) {
