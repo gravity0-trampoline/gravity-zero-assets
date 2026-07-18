@@ -378,7 +378,7 @@
 
   <div class="overlay celebrate" id="celebrate-overlay">
     <div class="modal">
-      <div class="speed-clear-headline">⚡ スピードクリア達成!!</div>
+      <div class="speed-clear-headline">⚡ グラゼロ・チャレンジ達成!!</div>
       <h2>🎉 重力離脱!<br>達成おめでとうございます!</h2>
       <p id="celebrate-message"></p>
       <div class="next-step">
@@ -693,7 +693,7 @@
         return;
       }
       var daysLeft = Math.ceil((new Date(status.speedClearDeadline) - new Date()) / (1000 * 60 * 60 * 24));
-      el.innerHTML = daysLeft > 0 ? '<span class="speed-clear-label">⚡ スピードクリアまであと</span><span class="speed-clear-days">' + daysLeft + '日</span>' : '';
+      el.innerHTML = daysLeft > 0 ? '<span class="speed-clear-label">⚡ グラゼロ・チャレンジまであと</span><span class="speed-clear-days">' + daysLeft + '日</span>' : '';
     }
 
     function toKatakana(text) {
