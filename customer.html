@@ -169,6 +169,15 @@
     .mission-proof.granted .mission-proof-note {
       color: #2f7d4f;
     }
+    .mission-proof.expired {
+      background: linear-gradient(135deg, #f2f2f2, #e2e2e2);
+      border-color: #999999;
+    }
+    .mission-proof.expired .mission-proof-title,
+    .mission-proof.expired .mission-proof-note {
+      color: #777777;
+      text-shadow: none;
+    }
     .expiry-info {
       font-size: 14px;
       font-weight: 700;
@@ -733,11 +742,14 @@
       }
       el.style.display = 'block';
       var note = $('mission-proof-note');
+      el.classList.remove('granted', 'expired');
       if (status.bonusGranted) {
         el.classList.add('granted');
         note.textContent = '特典受け取り済みです';
+      } else if (status.bonusClaimExpired) {
+        el.classList.add('expired');
+        note.textContent = '特典の受け取り期限が終了しました';
       } else {
-        el.classList.remove('granted');
         note.textContent = '次回、スタッフにこの画面を見せてください';
       }
     }
