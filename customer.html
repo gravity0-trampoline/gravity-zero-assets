@@ -225,6 +225,7 @@
       color: #6b5b95;
     }
     .message.error { color: #dc2626; }
+    .message.completed { color: #F067A6; }
 
     .overlay {
       position: fixed;
@@ -768,6 +769,7 @@
       var message = $('message');
       message.className = 'message';
       if (status.status === 'completed') {
+        message.className = 'message completed';
         var isWaitingForBonus = status.speedClearAchieved && !status.bonusGranted;
         message.textContent = isWaitingForBonus
           ? 'この回数券は使い切りました。ご利用ありがとうございました。'
