@@ -147,6 +147,28 @@
     .speed-clear-days {
       font-size: 2em;
     }
+    .mission-proof {
+      margin: 4px 0 20px;
+      padding: 16px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #fff7d6, #ffe9a8);
+      border: 2px solid #d4af00;
+    }
+    .mission-proof-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #8b6508;
+      text-shadow: 0 0 12px rgba(255, 215, 100, 0.6);
+    }
+    .mission-proof-note {
+      margin-top: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #b23b3b;
+    }
+    .mission-proof.granted .mission-proof-note {
+      color: #2f7d4f;
+    }
     .expiry-info {
       font-size: 14px;
       font-weight: 700;
@@ -349,6 +371,11 @@
     <div class="gravity-number" id="gravity-number">-</div>
 
     <div class="speed-clear-progress" id="speed-clear-progress"></div>
+
+    <div class="mission-proof" id="mission-proof" style="display:none">
+      <div class="mission-proof-title">🎉 ミッションクリア!</div>
+      <div class="mission-proof-note" id="mission-proof-note"></div>
+    </div>
 
     <div class="gauge" id="gauge"></div>
 
@@ -696,6 +723,24 @@
       el.innerHTML = daysLeft > 0 ? '<span class="speed-clear-label">⚡ グラゼロ・チャレンジ<br>達成まで あと</span><span class="speed-clear-days">' + daysLeft + '日</span>' : '';
     }
 
+    function renderMissionProof(status) {
+      var el = $('mission-proof');
+      if (!status.speedClearAchieved) {
+        el.style.display = 'none';
+        el.classList.remove('granted');
+        return;
+      }
+      el.style.display = 'block';
+      var note = $('mission-proof-note');
+      if (status.bonusGranted) {
+        el.classList.add('granted');
+        note.textContent = '特典受け取り済みです';
+      } else {
+        el.classList.remove('granted');
+        note.textContent = 'スタッフにこの画面を見せてください';
+      }
+    }
+
     function toKatakana(text) {
       return (text || '').replace(/[ぁ-ゖ]/g, function (ch) {
         return String.fromCharCode(ch.charCodeAt(0) + 0x60);
@@ -714,6 +759,7 @@
       renderPurchaserName(status);
       renderExpiryInfo(status);
       renderSpeedClearProgress(status);
+      renderMissionProof(status);
       $('share-button').style.display = status.status === 'active' ? 'block' : 'none';
 
       var message = $('message');
