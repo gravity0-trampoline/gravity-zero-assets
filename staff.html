@@ -192,7 +192,7 @@
       $('form-view').style.display = 'none';
       $('result-view').className = 'result show';
       $('qr-image').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(ticket.ticketUrl);
-      $('result-name').textContent = ticket.purchaserName;
+      $('result-name').textContent = ticket.purchaserName + ' 様';
       $('result-id').textContent = ticket.ticketId;
       $('result-count-expiry').textContent = ticket.totalCount + '回 / ' + formatDate(ticket.expiryDate) + 'まで';
       $('result-url').textContent = ticket.ticketUrl;
