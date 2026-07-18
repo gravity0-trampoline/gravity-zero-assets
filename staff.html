@@ -89,6 +89,38 @@
       margin-bottom: 14px;
       min-height: 1em;
     }
+    .success {
+      color: #2f7d4f;
+      font-weight: 700;
+      font-size: 13px;
+      margin-top: -8px;
+      margin-bottom: 14px;
+      min-height: 1em;
+    }
+    .bonus-card {
+      margin-top: 16px;
+    }
+    .bonus-card h2 {
+      font-size: 15px;
+      color: #000000;
+      margin: 0 0 14px;
+    }
+    button.grant-bonus {
+      width: 100%;
+      padding: 14px 0;
+      border-radius: 12px;
+      border: none;
+      background: #d4af00;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.grant-bonus:disabled {
+      background: #ffffff;
+      color: #4169e1;
+      cursor: not-allowed;
+    }
     .result {
       display: none;
       text-align: center;
@@ -159,6 +191,14 @@
       <div class="url" id="result-url"></div>
       <button class="again" id="issue-again">続けて発行する</button>
     </div>
+  </div>
+
+  <div class="card bonus-card">
+    <h2>🎁 ミッションクリア特典付与</h2>
+    <label for="bonus-ticket-id">TicketID</label>
+    <input id="bonus-ticket-id" type="text" placeholder="例: XNCKWP9F">
+    <div class="error" id="bonus-message"></div>
+    <button class="grant-bonus" id="bonus-button">🎁 特典を付与する</button>
   </div>
 
   <script>
@@ -234,6 +274,42 @@
     });
 
     $('issue-again').addEventListener('click', resetForm);
+
+    function setBonusMessage(text, isError) {
+      var el = $('bonus-message');
+      el.className = isError ? 'error' : 'success';
+      el.textContent = text;
+    }
+
+    $('bonus-button').addEventListener('click', function () {
+      var ticketId = $('bonus-ticket-id').value.trim();
+      setBonusMessage('', false);
+
+      if (!ticketId) {
+        setBonusMessage('TicketIDを入力してください。', true);
+        return;
+      }
+
+      $('bonus-button').disabled = true;
+      $('bonus-button').textContent = '処理中...';
+
+      apiCall('grantBonus', { tid: ticketId })
+        .then(function (result) {
+          $('bonus-button').disabled = false;
+          $('bonus-button').textContent = '🎁 特典を付与する';
+          if (result.alreadyGranted) {
+            setBonusMessage(result.purchaserName + '様は既に特典付与済みです。', false);
+          } else {
+            setBonusMessage(result.purchaserName + '様への特典付与が完了しました。', false);
+            $('bonus-ticket-id').value = '';
+          }
+        })
+        .catch(function (error) {
+          $('bonus-button').disabled = false;
+          $('bonus-button').textContent = '🎁 特典を付与する';
+          setBonusMessage(error.message, true);
+        });
+    });
   </script>
 </body>
 </html>
