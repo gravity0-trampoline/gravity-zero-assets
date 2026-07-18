@@ -768,7 +768,10 @@
       var message = $('message');
       message.className = 'message';
       if (status.status === 'completed') {
-        message.textContent = 'この回数券は使い切りました。ご利用ありがとうございました。';
+        var isWaitingForBonus = status.speedClearAchieved && !status.bonusGranted;
+        message.textContent = isWaitingForBonus
+          ? 'この回数券は使い切りました。ご利用ありがとうございました。'
+          : 'この回数券は使い切りました。ご利用ありがとうございました。このアプリはアンインストールしてください。';
       } else if (status.status === 'expired') {
         message.className = 'message error';
         message.textContent = 'この回数券は有効期限が切れています。';
