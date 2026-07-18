@@ -693,7 +693,7 @@
         return;
       }
       var daysLeft = Math.ceil((new Date(status.speedClearDeadline) - new Date()) / (1000 * 60 * 60 * 24));
-      el.innerHTML = daysLeft > 0 ? '<span class="speed-clear-label">⚡ グラゼロ・チャレンジまであと</span><span class="speed-clear-days">' + daysLeft + '日</span>' : '';
+      el.innerHTML = daysLeft > 0 ? '<span class="speed-clear-label">⚡ グラゼロ・チャレンジ達成まで あと</span><span class="speed-clear-days">' + daysLeft + '日</span>' : '';
     }
 
     function toKatakana(text) {
