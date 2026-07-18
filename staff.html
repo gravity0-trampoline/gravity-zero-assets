@@ -195,8 +195,8 @@
 
   <div class="card bonus-card">
     <h2>🎁 ミッションクリア特典付与</h2>
-    <label for="bonus-ticket-id">TicketID</label>
-    <input id="bonus-ticket-id" type="text" placeholder="例: XNCKWP9F">
+    <label for="bonus-purchaser-name">購入者名(ひらがな)</label>
+    <input id="bonus-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
     <div class="error" id="bonus-message"></div>
     <button class="grant-bonus" id="bonus-button">🎁 特典を付与する</button>
   </div>
@@ -282,18 +282,18 @@
     }
 
     $('bonus-button').addEventListener('click', function () {
-      var ticketId = $('bonus-ticket-id').value.trim();
+      var purchaserName = $('bonus-purchaser-name').value.trim();
       setBonusMessage('', false);
 
-      if (!ticketId) {
-        setBonusMessage('TicketIDを入力してください。', true);
+      if (!purchaserName) {
+        setBonusMessage('購入者名を入力してください。', true);
         return;
       }
 
       $('bonus-button').disabled = true;
       $('bonus-button').textContent = '処理中...';
 
-      apiCall('grantBonus', { tid: ticketId })
+      apiCall('grantBonus', { name: purchaserName })
         .then(function (result) {
           $('bonus-button').disabled = false;
           $('bonus-button').textContent = '🎁 特典を付与する';
@@ -301,7 +301,7 @@
             setBonusMessage(result.purchaserName + '様は既に特典付与済みです。', false);
           } else {
             setBonusMessage(result.purchaserName + '様への特典付与が完了しました。', false);
-            $('bonus-ticket-id').value = '';
+            $('bonus-purchaser-name').value = '';
           }
         })
         .catch(function (error) {
