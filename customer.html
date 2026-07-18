@@ -760,6 +760,9 @@
       renderExpiryInfo(status);
       renderSpeedClearProgress(status);
       renderMissionProof(status);
+      if (ticketId && status.speedClearAchieved) {
+        localStorage.setItem('gzeroAchieved:' + ticketId, 'true');
+      }
       $('share-button').style.display = status.status === 'active' ? 'block' : 'none';
 
       var message = $('message');
@@ -850,6 +853,10 @@
           showError(error.message);
         });
     });
+
+    if (ticketId && localStorage.getItem('gzeroAchieved:' + ticketId) === 'true') {
+      $('loading-text').textContent = 'あなたのチケットを確認しています…';
+    }
 
     if (!ticketId || !shareToken) {
       hideLoading();
