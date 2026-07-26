@@ -227,6 +227,12 @@
       font-size: 14px;
       cursor: pointer;
     }
+    .updated-info {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #9a8fb0;
+      text-align: center;
+    }
 
     .message {
       margin-top: 16px;
@@ -392,6 +398,8 @@
     <div class="buttons" id="buttons"></div>
 
     <button class="share-button" id="share-button" style="display:none">🔗 他のスマホにシェアする</button>
+
+    <div class="updated-info" id="updated-info"></div>
 
     <div class="message" id="message"></div>
   </div>
@@ -723,6 +731,18 @@
       el.textContent = 'チケット有効期限: ' + d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + 'まで';
     }
 
+    function renderUpdatedInfo(status) {
+      var el = $('updated-info');
+      if (!status.updatedAt) {
+        el.textContent = '';
+        return;
+      }
+      var d = new Date(status.updatedAt);
+      var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+      el.textContent = '最終更新日時: ' + d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' +
+        pad(d.getHours()) + '時' + pad(d.getMinutes()) + '分';
+    }
+
     function renderSpeedClearProgress(status) {
       var el = $('speed-clear-progress');
       if (status.status !== 'active' || !status.speedClearDeadline) {
@@ -771,6 +791,7 @@
       renderButtons(status);
       renderPurchaserName(status);
       renderExpiryInfo(status);
+      renderUpdatedInfo(status);
       renderSpeedClearProgress(status);
       renderMissionProof(status);
       if (ticketId && status.speedClearAchieved) {
