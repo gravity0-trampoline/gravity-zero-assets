@@ -775,7 +775,7 @@
     }
 
     function toKatakana(text) {
-      return (text || '').replace(/[ぁ-ゖ]/g, function (ch) {
+      return String(text || '').replace(/[ぁ-ゖ]/g, function (ch) {
         return String.fromCharCode(ch.charCodeAt(0) + 0x60);
       });
     }
