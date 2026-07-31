@@ -123,6 +123,22 @@
       color: #4169e1;
       cursor: not-allowed;
     }
+    button.grant-coupon {
+      width: 100%;
+      padding: 14px 0;
+      border-radius: 12px;
+      border: none;
+      background: #4fd1ff;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.grant-coupon:disabled {
+      background: #ffffff;
+      color: #4169e1;
+      cursor: not-allowed;
+    }
     .result {
       display: none;
       text-align: center;
@@ -201,6 +217,14 @@
     <input id="bonus-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
     <div class="error" id="bonus-message"></div>
     <button class="grant-bonus" id="bonus-button">🎁 特典を付与する</button>
+  </div>
+
+  <div class="card bonus-card">
+    <h2>🎫 完走クーポン付与(30分無料)</h2>
+    <label for="coupon-purchaser-name">購入者名(ひらがな)</label>
+    <input id="coupon-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
+    <div class="error" id="coupon-message"></div>
+    <button class="grant-coupon" id="coupon-button">🎫 クーポンを付与する</button>
   </div>
 
   <script>
@@ -310,6 +334,42 @@
           $('bonus-button').disabled = false;
           $('bonus-button').textContent = '🎁 特典を付与する';
           setBonusMessage(error.message, true);
+        });
+    });
+
+    function setCouponMessage(text, isError) {
+      var el = $('coupon-message');
+      el.className = isError ? 'error' : 'success';
+      el.textContent = text;
+    }
+
+    $('coupon-button').addEventListener('click', function () {
+      var purchaserName = $('coupon-purchaser-name').value.trim();
+      setCouponMessage('', false);
+
+      if (!purchaserName) {
+        setCouponMessage('購入者名を入力してください。', true);
+        return;
+      }
+
+      $('coupon-button').disabled = true;
+      $('coupon-button').textContent = '処理中...';
+
+      apiCall('grantCompletionCoupon', { name: purchaserName })
+        .then(function (result) {
+          $('coupon-button').disabled = false;
+          $('coupon-button').textContent = '🎫 クーポンを付与する';
+          if (result.alreadyGranted) {
+            setCouponMessage(result.purchaserName + '様は既にクーポン付与済みです。', false);
+          } else {
+            setCouponMessage(result.purchaserName + '様へのクーポン付与が完了しました。', false);
+            $('coupon-purchaser-name').value = '';
+          }
+        })
+        .catch(function (error) {
+          $('coupon-button').disabled = false;
+          $('coupon-button').textContent = '🎫 クーポンを付与する';
+          setCouponMessage(error.message, true);
         });
     });
   </script>
