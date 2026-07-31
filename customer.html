@@ -826,8 +826,14 @@
         el.classList.add('expired');
         note.textContent = 'クーポンの有効期限が終了しました';
       } else {
-        note.textContent = '次回のご来店時にスタッフにこの画面を見せてください';
+        note.textContent = '次回のご来店時にスタッフにこの画面を見せてください' + formatCouponDeadline(status.completionCouponDeadline);
       }
+    }
+
+    function formatCouponDeadline(isoString) {
+      if (!isoString) return '';
+      var d = new Date(isoString);
+      return '(有効期限: ' + d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + 'まで)';
     }
 
     function toKatakana(text) {
