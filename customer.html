@@ -419,7 +419,7 @@
     <div class="speed-clear-progress" id="speed-clear-progress"></div>
 
     <div class="mission-proof" id="mission-proof" style="display:none">
-      <div class="mission-proof-title">🎉 ミッションクリア!</div>
+      <div class="mission-proof-title">🎉 グラゼロ・アタック達成!</div>
       <div class="mission-proof-note" id="mission-proof-note"></div>
     </div>
 
@@ -805,7 +805,7 @@
         el.classList.add('expired');
         note.textContent = '特典の受け取り期限が終了しました';
       } else {
-        note.textContent = '次回、スタッフにこの画面を見せてください';
+        note.textContent = '次回、スタッフにこの画面を見せてください' + formatDeadlineSuffix(status.expiryDate);
       }
     }
 
@@ -826,11 +826,11 @@
         el.classList.add('expired');
         note.textContent = 'クーポンの有効期限が終了しました';
       } else {
-        note.textContent = '次回のご来店時にスタッフにこの画面を見せてください' + formatCouponDeadline(status.completionCouponDeadline);
+        note.textContent = '次回のご来店時にスタッフにこの画面を見せてください' + formatDeadlineSuffix(status.completionCouponDeadline);
       }
     }
 
-    function formatCouponDeadline(isoString) {
+    function formatDeadlineSuffix(isoString) {
       if (!isoString) return '';
       var d = new Date(isoString);
       return '(有効期限: ' + d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + 'まで)';
