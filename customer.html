@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>Gravity ZERO 回数券</title>
-  <link rel="manifest" id="manifest-link" href="./manifest.json">
   <link rel="icon" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./icon-192.png">
   <meta name="apple-mobile-web-app-title" content="G-ZERO 回数券">
@@ -482,27 +481,13 @@
     var ticketId = urlParams.get('tid') || '';
     var shareToken = urlParams.get('tk') || '';
 
-    // このページ専用のマニフェストを動的生成し、ホーム画面のアイコンから
-    // 直接このチケットへ戻れるようにする(静的ファイルだと全員共通になってしまうため)。
-    (function setupManifest() {
-      var manifest = {
-        name: 'G-ZERO 回数券',
-        short_name: 'G-ZERO 回数券',
-        start_url: './customer.html?tid=' + encodeURIComponent(ticketId) + '&tk=' + encodeURIComponent(shareToken),
-        display: 'standalone',
-        background_color: '#040d1f',
-        theme_color: '#040d1f',
-        icons: [
-          { src: new URL('./icon-192.png', window.location.href).href, sizes: '192x192', type: 'image/png' },
-          { src: new URL('./icon-512.png', window.location.href).href, sizes: '512x512', type: 'image/png' }
-        ]
-      };
-      // iOSのSafariは「ホーム画面に追加」時にblob: URLのmanifestを参照できず、
-      // ページ読み込み時の静的なhref(./manifest.json、start_url=staff.html)に
-      // フォールバックしてしまうため、blob:ではなくdata: URIを使う。
-      document.getElementById('manifest-link').href =
-        'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(manifest));
-    })();
+    // Web App Manifestのstart_urlをJSで動的に書き換える方式は、iOS Safariの
+    // 「ホーム画面に追加」がJSによる<link rel="manifest">の変更(blob:/data:
+    // いずれのURIでも)を反映せず、常にstaff.html向けの共有manifest.jsonに
+    // フォールバックしてしまうため機能しなかった。manifestを一切持たせず、
+    // apple-mobile-web-app-capable等のmetaタグのみに頼る旧来方式に変更。
+    // この方式ではiOSは「追加した時点で開いていたURL」をそのままホーム画面
+    // アイコンの起動先として記憶するため、tid/tk付きのURLを確実に保持できる。
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(function () {});
