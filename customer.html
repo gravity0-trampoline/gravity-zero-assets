@@ -497,8 +497,11 @@
           { src: new URL('./icon-512.png', window.location.href).href, sizes: '512x512', type: 'image/png' }
         ]
       };
-      var blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-      document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+      // iOSのSafariは「ホーム画面に追加」時にblob: URLのmanifestを参照できず、
+      // ページ読み込み時の静的なhref(./manifest.json、start_url=staff.html)に
+      // フォールバックしてしまうため、blob:ではなくdata: URIを使う。
+      document.getElementById('manifest-link').href =
+        'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(manifest));
     })();
 
     if ('serviceWorker' in navigator) {
