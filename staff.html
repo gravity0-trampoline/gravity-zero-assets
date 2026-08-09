@@ -139,6 +139,69 @@
       color: #4169e1;
       cursor: not-allowed;
     }
+    button.lookup-search {
+      width: 100%;
+      padding: 14px 0;
+      border-radius: 12px;
+      border: none;
+      background: #6c5ce7;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.lookup-search:disabled {
+      background: #ffffff;
+      color: #4169e1;
+      cursor: not-allowed;
+    }
+    .lookup-item {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 12px;
+      text-align: left;
+    }
+    .lookup-item .qr-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lookup-item .qr-row img {
+      width: 90px;
+      height: 90px;
+      border-radius: 8px;
+      background: #fff;
+      padding: 6px;
+      flex-shrink: 0;
+    }
+    .lookup-item dl {
+      font-size: 13px;
+      margin: 0;
+    }
+    .lookup-item dt { color: #000000; font-weight: 700; margin-top: 6px; }
+    .lookup-item dd { margin: 2px 0 0; font-weight: 600; color: #F067A6; }
+    .lookup-item .url {
+      word-break: break-all;
+      font-size: 11px;
+      color: var(--text-dim);
+      background: #0f131c;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 10px;
+    }
+    button.copy-url {
+      margin-top: 8px;
+      width: 100%;
+      padding: 10px 0;
+      border-radius: 10px;
+      border: none;
+      background: #4fd1ff;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
     .result {
       display: none;
       text-align: center;
@@ -225,6 +288,17 @@
     <input id="coupon-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
     <div class="error" id="coupon-message"></div>
     <button class="grant-coupon" id="coupon-button">🎫 クーポンを付与する</button>
+  </div>
+
+  <div class="card bonus-card">
+    <h2>🔍 URL再案内(ホーム画面アイコン消失・URL紛失時)</h2>
+    <label for="lookup-purchaser-name">購入者名</label>
+    <input id="lookup-purchaser-name" type="text" placeholder="例: 重力無太郎">
+    <label for="lookup-purchaser-birthday">生年月日(任意・同姓同名の絞り込み用)</label>
+    <input id="lookup-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
+    <div class="error" id="lookup-message"></div>
+    <button class="lookup-search" id="lookup-button">🔍 検索する</button>
+    <div id="lookup-results"></div>
   </div>
 
   <script>
@@ -370,6 +444,84 @@
           $('coupon-button').disabled = false;
           $('coupon-button').textContent = '🎫 クーポンを付与する';
           setCouponMessage(error.message, true);
+        });
+    });
+
+    function statusLabel(status) {
+      switch (status) {
+        case 'active': return '利用中';
+        case 'completed': return '完走済み';
+        case 'expired': return '期限切れ';
+        default: return status;
+      }
+    }
+
+    function setLookupMessage(text, isError) {
+      var el = $('lookup-message');
+      el.className = isError ? 'error' : 'success';
+      el.textContent = text;
+    }
+
+    function renderLookupResults(tickets) {
+      var container = $('lookup-results');
+      container.innerHTML = '';
+
+      tickets.forEach(function (ticket) {
+        var item = document.createElement('div');
+        item.className = 'lookup-item';
+
+        var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(ticket.ticketUrl);
+
+        item.innerHTML =
+          '<div class="qr-row">' +
+            '<img src="' + qrUrl + '" alt="QRコード">' +
+            '<dl>' +
+              '<dt>【購入者名】</dt><dd>' + ticket.purchaserName + ' 様</dd>' +
+              '<dt>【TicketID】</dt><dd>' + ticket.ticketId + '</dd>' +
+              '<dt>【状態】</dt><dd>' + statusLabel(ticket.status) + '(残' + ticket.remainingCount + '/' + ticket.totalCount + '回)</dd>' +
+              '<dt>【有効期限】</dt><dd>' + formatDate(ticket.expiryDate) + 'まで</dd>' +
+            '</dl>' +
+          '</div>' +
+          '<div class="url">' + ticket.ticketUrl + '</div>' +
+          '<button class="copy-url" type="button">URLをコピー</button>';
+
+        var copyButton = item.querySelector('.copy-url');
+        copyButton.addEventListener('click', function () {
+          navigator.clipboard.writeText(ticket.ticketUrl).then(function () {
+            var original = copyButton.textContent;
+            copyButton.textContent = 'コピーしました';
+            setTimeout(function () { copyButton.textContent = original; }, 1500);
+          });
+        });
+
+        container.appendChild(item);
+      });
+    }
+
+    $('lookup-button').addEventListener('click', function () {
+      var name = $('lookup-purchaser-name').value.trim();
+      var birthday = $('lookup-purchaser-birthday').value.trim();
+      setLookupMessage('', false);
+      $('lookup-results').innerHTML = '';
+
+      if (!name) {
+        setLookupMessage('購入者名を入力してください。', true);
+        return;
+      }
+
+      $('lookup-button').disabled = true;
+      $('lookup-button').textContent = '検索中...';
+
+      apiCall('lookup', { name: name, birthday: birthday })
+        .then(function (result) {
+          $('lookup-button').disabled = false;
+          $('lookup-button').textContent = '🔍 検索する';
+          renderLookupResults(result.tickets);
+        })
+        .catch(function (error) {
+          $('lookup-button').disabled = false;
+          $('lookup-button').textContent = '🔍 検索する';
+          setLookupMessage(error.message, true);
         });
     });
   </script>
