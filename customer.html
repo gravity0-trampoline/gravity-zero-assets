@@ -877,8 +877,8 @@
       renderSpeedClearProgress(status);
       renderMissionProof(status);
       renderCompletionCoupon(status);
-      if (ticketId && status.speedClearAchieved) {
-        localStorage.setItem('gzeroAchieved:' + ticketId, 'true');
+      if (ticketId) {
+        localStorage.setItem('gzeroVisited:' + ticketId, 'true');
       }
       $('share-button').style.display = status.status === 'active' ? 'block' : 'none';
 
@@ -976,7 +976,7 @@
         });
     });
 
-    if (ticketId && localStorage.getItem('gzeroAchieved:' + ticketId) === 'true') {
+    if (ticketId && localStorage.getItem('gzeroVisited:' + ticketId) === 'true') {
       $('loading-text').textContent = 'あなたのチケットを確認しています…';
     }
 
