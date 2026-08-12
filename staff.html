@@ -310,23 +310,59 @@
 
     function $(id) { return document.getElementById(id); }
 
-    function apiCall(action, params) {
-      var url = new URL(API_BASE);
-      url.searchParams.set('action', action);
-      Object.keys(params || {}).forEach(function (key) {
-        url.searchParams.set(key, params[key]);
-      });
-      // iOS Safari等がGETリクエストを強くキャッシュし、サーバー側の一時的な
-      // 不具合や再デプロイ前の古い応答をいつまでも再送してしまう問題への対策。
-      // 呼び出しごとに変わるパラメータを付与してURLを一意にし、
-      // cache: 'no-store' でHTTPキャッシュそのものを使わせない。
-      url.searchParams.set('_', Date.now().toString());
-      return fetch(url.toString(), { cache: 'no-store' })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (data && data.error) throw new Error(data.error);
-          return data;
+    function generateRequestId_() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+    }
+
+    /**
+     * action=issue/consumeのように副作用(発行・消化)を伴う呼び出しは
+     * idempotent: true を指定すること。呼び出しごとに変わるrid(リクエストID)を
+     * 付与し、レスポンスのJSONパースに失敗した場合サーバー側は同じridの結果を
+     * 再実行せずそのまま返す(digital-kaisuuken側のwithIdempotency_と対応)ので、
+     * 安全に自動リトライできる。
+     */
+    function apiCall(action, params, opts) {
+      opts = opts || {};
+      var rid = opts.idempotent ? generateRequestId_() : null;
+      var maxAttempts = 3;
+
+      function attempt(attemptsLeft) {
+        var url = new URL(API_BASE);
+        url.searchParams.set('action', action);
+        Object.keys(params || {}).forEach(function (key) {
+          url.searchParams.set(key, params[key]);
         });
+        if (rid) url.searchParams.set('rid', rid);
+        // iOS Safari等がGETリクエストを強くキャッシュし、サーバー側の一時的な
+        // 不具合や再デプロイ前の古い応答をいつまでも再送してしまう問題への対策。
+        // 呼び出しごとに変わるパラメータを付与してURLを一意にし、
+        // cache: 'no-store' でHTTPキャッシュそのものを使わせない。
+        url.searchParams.set('_', Date.now().toString() + '-' + Math.random().toString(36).slice(2));
+
+        return fetch(url.toString(), { cache: 'no-store' })
+          .then(function (res) { return res.text(); })
+          .then(function (text) {
+            var data;
+            try {
+              data = JSON.parse(text);
+            } catch (parseError) {
+              // まれにサーバーからの応答がJSON以外(HTML等)になることがある。
+              // rid付き(idempotent)呼び出しなら、サーバー側で処理が二重実行
+              // されない保証があるため安全にリトライできる。
+              if (attemptsLeft > 1) {
+                return new Promise(function (resolve) {
+                  setTimeout(function () { resolve(attempt(attemptsLeft - 1)); }, 800);
+                });
+              }
+              throw new Error('サーバーとの通信に失敗しました。電波の良い場所で少し待ってから、もう一度お試しください。');
+            }
+            if (data && data.error) throw new Error(data.error);
+            return data;
+          });
+      }
+
+      return attempt(maxAttempts);
     }
 
     function formatDate(isoString) {
@@ -367,7 +403,7 @@
       $('issue-button').disabled = true;
       $('issue-button').textContent = '発行中...';
 
-      apiCall('issue', { name: name, phone: phone })
+      apiCall('issue', { name: name, phone: phone }, { idempotent: true })
         .then(function (ticket) {
           showResult(ticket);
         })
