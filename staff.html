@@ -316,7 +316,12 @@
       Object.keys(params || {}).forEach(function (key) {
         url.searchParams.set(key, params[key]);
       });
-      return fetch(url.toString())
+      // iOS Safari等がGETリクエストを強くキャッシュし、サーバー側の一時的な
+      // 不具合や再デプロイ前の古い応答をいつまでも再送してしまう問題への対策。
+      // 呼び出しごとに変わるパラメータを付与してURLを一意にし、
+      // cache: 'no-store' でHTTPキャッシュそのものを使わせない。
+      url.searchParams.set('_', Date.now().toString());
+      return fetch(url.toString(), { cache: 'no-store' })
         .then(function (res) { return res.json(); })
         .then(function (data) {
           if (data && data.error) throw new Error(data.error);
