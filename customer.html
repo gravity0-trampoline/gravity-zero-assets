@@ -991,6 +991,14 @@
       $('confirm-overlay').className = 'overlay';
     }
 
+    function hasCelebrated() {
+      return !!(ticketId && localStorage.getItem('gzeroCelebrated:' + ticketId) === 'true');
+    }
+
+    function markCelebrated() {
+      if (ticketId) localStorage.setItem('gzeroCelebrated:' + ticketId, 'true');
+    }
+
     function showCelebration(result) {
       var message = motivationMessages[Math.floor(Math.random() * motivationMessages.length)];
       $('celebrate-message').textContent = message;
@@ -1003,6 +1011,7 @@
         $('celebrate-overlay').className = 'overlay celebrate show';
         playConfettiEffect(0);
       }
+      markCelebrated();
     }
 
     $('share-button').addEventListener('click', function () {
@@ -1063,7 +1072,7 @@
         .then(function (status) {
           hideLoading();
           renderStatus(status);
-          if (status.isCompleted) showCelebration(status);
+          if (status.isCompleted && !hasCelebrated()) showCelebration(status);
         })
         .catch(function (error) {
           hideLoading();
