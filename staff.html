@@ -284,23 +284,38 @@
     }
     .amount-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin-bottom: 18px;
+      margin-bottom: 6px;
     }
     button.amount-option {
-      padding: 12px 0;
+      padding: 12px 4px;
       border-radius: 10px;
-      border: 2px solid #F067A6;
+      border: 2px solid #2f9e6b;
       background: #ffffff;
-      color: #F067A6;
-      font-size: 14px;
-      font-weight: 700;
+      color: #2f9e6b;
       cursor: pointer;
+      line-height: 1.3;
+    }
+    button.amount-option .amount-yen {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    button.amount-option .amount-hours {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
     }
     button.amount-option.selected {
-      background: #F067A6;
+      background: #2f9e6b;
       color: #ffffff;
+    }
+    .amount-hint {
+      font-size: 12px;
+      color: #666666;
+      margin: 0 0 18px;
+      text-align: center;
     }
     button.charge-pass {
       width: 100%;
@@ -395,6 +410,7 @@
 
           <label>初回チャージ額</label>
           <div class="amount-grid" id="pass-amount-grid"></div>
+          <div class="amount-hint">1,600円 = 約1時間分</div>
 
           <div class="error" id="pass-issue-error"></div>
 
@@ -421,6 +437,7 @@
         <input id="pass-charge-name" type="text" placeholder="例: 重力無太郎">
         <label for="pass-charge-amount">チャージ額(円・1,600円単位、上限なし)</label>
         <input id="pass-charge-amount" type="number" step="1600" min="1600" placeholder="例: 1600">
+        <div class="amount-hint">1,600円 = 約1時間分</div>
         <div class="error" id="pass-charge-message"></div>
         <button class="charge-pass" id="pass-charge-button">💳 チャージする</button>
       </div>
@@ -702,17 +719,24 @@
 
     // ---- 従量制パス(usage-based-pass-spec.md参照) ----
 
-    var PASS_INITIAL_CHARGE_AMOUNTS = [4800, 6400, 8000, 9600, 11200, 12800, 14400, 16000];
+    // 選択肢が多すぎるとお客さんが迷うため、8段階(4,800〜16,000円)の全てを
+    // ボタンにするのではなく、松竹梅の3段階に絞って提示する(バックエンドの
+    // issuePass自体は引き続き1,600円単位で4,800〜16,000円の間を受け付けるが、
+    // このUIではその中から選びやすい3点だけをボタンとして見せる)。
+    var PASS_INITIAL_CHARGE_AMOUNTS = [4800, 9600, 16000];
+    // 消費レート(15分400円)より、1,600円 = 1時間で固定的に換算できる。
+    var PASS_YEN_PER_HOUR = 1600;
     var selectedInitialChargeAmount = null;
 
     function renderPassAmountGrid() {
       var grid = $('pass-amount-grid');
       grid.innerHTML = '';
       PASS_INITIAL_CHARGE_AMOUNTS.forEach(function (amount) {
+        var hours = amount / PASS_YEN_PER_HOUR;
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'amount-option';
-        btn.textContent = amount.toLocaleString() + '円';
+        btn.innerHTML = '<span class="amount-yen">' + amount.toLocaleString() + '円</span><span class="amount-hours">約' + hours + '時間分</span>';
         btn.addEventListener('click', function () {
           selectedInitialChargeAmount = amount;
           Array.prototype.forEach.call(grid.querySelectorAll('.amount-option'), function (b) {

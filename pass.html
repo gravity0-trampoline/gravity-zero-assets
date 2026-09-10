@@ -403,6 +403,46 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    /* IDが無い状態(QRコード読み取り前の料金案内用URLなど)でアクセスされた
+       場合に表示する料金表。 */
+    .price-menu-lead {
+      font-size: 14px;
+      color: var(--text-dim);
+      text-align: center;
+      margin: 0 0 18px;
+    }
+    .price-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-radius: 14px;
+      background: #fff7d6;
+      border: 2px solid #d4af00;
+    }
+    .price-row .price-yen {
+      font-size: 22px;
+      font-weight: 800;
+      color: #8b6508;
+    }
+    .price-row .price-hours {
+      font-size: 15px;
+      font-weight: 700;
+      color: #b23b3b;
+    }
+    .price-hint {
+      font-size: 12px;
+      color: #6b5b95;
+      text-align: center;
+      margin: 8px 0 20px;
+    }
   </style>
 </head>
 <body>
@@ -412,6 +452,12 @@
   </div>
   <div class="purchaser-name" id="purchaser-name"></div>
   <div class="expiry-info" id="expiry-info"></div>
+
+  <div class="card" id="price-menu-card" style="display:none">
+    <div class="price-menu-lead">従量制パスの料金案内です。<br>スタッフまでお声がけください。</div>
+    <div class="price-grid" id="price-grid"></div>
+    <div class="price-hint">お手持ちの残高に応じて、その都度15分単位(15/30/45/60分)で自由に消費できます</div>
+  </div>
 
   <div class="card" id="main-card">
     <div class="balance-label">残高</div>
@@ -832,6 +878,25 @@
       }
     }
 
+    // staff.html側のPASS_INITIAL_CHARGE_AMOUNTS/PASS_YEN_PER_HOURと同じ値
+    // (選択肢を絞った松竹梅の3段階。金額だけでは目安がつかないため時間も併記する)。
+    var PASS_PRICE_TIERS = [4800, 9600, 16000];
+    var PASS_YEN_PER_HOUR = 1600;
+
+    function renderPriceMenu() {
+      var grid = $('price-grid');
+      grid.innerHTML = '';
+      PASS_PRICE_TIERS.forEach(function (amount) {
+        var hours = amount / PASS_YEN_PER_HOUR;
+        var row = document.createElement('div');
+        row.className = 'price-row';
+        row.innerHTML = '<span class="price-yen">' + amount.toLocaleString() + '円</span><span class="price-hours">約' + hours + '時間分</span>';
+        grid.appendChild(row);
+      });
+      $('price-menu-card').style.display = 'block';
+      $('main-card').style.display = 'none';
+    }
+
     function formatDeadlineSuffix(isoString) {
       if (!isoString) return '';
       var d = new Date(isoString);
@@ -960,8 +1025,11 @@
     }
 
     if (!passId || !shareToken) {
+      // パス発行後のURL(pid/tk付き)ではなく、料金案内用に一般公開しているURL
+      // (受付のポスターQR等を想定)からのアクセスとみなし、エラーではなく
+      // 料金表を表示する。
       hideLoading();
-      showError('パス情報が見つかりません。QRコードから開き直してください。');
+      renderPriceMenu();
     } else {
       apiCall('passStatus', { pid: passId, tk: shareToken })
         .then(function (status) {
