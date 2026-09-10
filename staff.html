@@ -242,15 +242,32 @@
       margin-top: 16px;
       cursor: pointer;
     }
-    .section-divider {
+    /* PC等の横幅が確保できる画面では回数券/従量制パスを2カラムで横並びにし、
+       スマホ等の狭い画面ではauto-fitにより自動的に1カラムへ戻る
+       (grid-template-columnsの各トラックがminmax(360px, 1fr)を満たせなくなった
+       時点で折り返される)。 */
+    .product-grid {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 8px 32px;
+      align-items: start;
+    }
+    .product-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .product-heading {
       width: 100%;
       max-width: 420px;
-      margin: 28px 0 4px;
+      margin: 8px 0 14px;
       text-align: center;
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 800;
       color: #4169e1;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
     }
     .amount-grid {
       display: grid;
@@ -291,110 +308,118 @@
   </style>
 </head>
 <body>
-  <h1>GRAVITY ZERO 回数券発行(スタッフ用)</h1>
+  <h1>GRAVITY ZERO スタッフ用管理画面</h1>
 
-  <div class="card">
-    <div id="form-view">
-      <label for="purchaser-name">購入者名</label>
-      <input id="purchaser-name" type="text" placeholder="重力無太郎">
+  <div class="product-grid">
+    <div class="product-column">
+      <div class="product-heading">🎫 回数券</div>
 
-      <label for="purchaser-phone">生年月日(任意)</label>
-      <input id="purchaser-phone" type="text" placeholder="yyyy/mm/dd">
+      <div class="card">
+        <div id="form-view">
+          <label for="purchaser-name">購入者名</label>
+          <input id="purchaser-name" type="text" placeholder="重力無太郎">
 
-      <div class="error" id="form-error"></div>
+          <label for="purchaser-phone">生年月日(任意)</label>
+          <input id="purchaser-phone" type="text" placeholder="yyyy/mm/dd">
 
-      <button class="issue" id="issue-button">発行する</button>
-    </div>
+          <div class="error" id="form-error"></div>
 
-    <div class="result" id="result-view">
-      <div style="text-align:center">
-        <div class="qr"><img id="qr-image" alt="QRコード"></div>
+          <button class="issue" id="issue-button">発行する</button>
+        </div>
+
+        <div class="result" id="result-view">
+          <div style="text-align:center">
+            <div class="qr"><img id="qr-image" alt="QRコード"></div>
+          </div>
+          <dl>
+            <dt>【購入者名】</dt><dd id="result-name"></dd>
+            <dt>【TicketID】</dt><dd id="result-id"></dd>
+            <dt>【回数 / 有効期限】</dt><dd id="result-count-expiry"></dd>
+          </dl>
+          <div class="url" id="result-url"></div>
+          <button class="again" id="issue-again">続けて発行する</button>
+        </div>
       </div>
-      <dl>
-        <dt>【購入者名】</dt><dd id="result-name"></dd>
-        <dt>【TicketID】</dt><dd id="result-id"></dd>
-        <dt>【回数 / 有効期限】</dt><dd id="result-count-expiry"></dd>
-      </dl>
-      <div class="url" id="result-url"></div>
-      <button class="again" id="issue-again">続けて発行する</button>
-    </div>
-  </div>
 
-  <div class="card bonus-card">
-    <h2>🎁 グラゼロ・アタック達成 特典付与</h2>
-    <label for="bonus-purchaser-name">購入者名(ひらがな)</label>
-    <input id="bonus-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
-    <div class="error" id="bonus-message"></div>
-    <button class="grant-bonus" id="bonus-button">🎁 特典を付与する</button>
-  </div>
-
-  <div class="card bonus-card">
-    <h2>🎫 次回来店、30分無料クーポン付与</h2>
-    <label for="coupon-purchaser-name">購入者名(ひらがな)</label>
-    <input id="coupon-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
-    <div class="error" id="coupon-message"></div>
-    <button class="grant-coupon" id="coupon-button">🎫 クーポンを付与する</button>
-  </div>
-
-  <div class="card bonus-card">
-    <h2>🔍 URL再案内(ホーム画面アイコン消失・URL紛失時)</h2>
-    <label for="lookup-purchaser-name">購入者名</label>
-    <input id="lookup-purchaser-name" type="text" placeholder="例: 重力無太郎">
-    <label for="lookup-purchaser-birthday">生年月日(任意・同姓同名の絞り込み用)</label>
-    <input id="lookup-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
-    <div class="error" id="lookup-message"></div>
-    <button class="lookup-search" id="lookup-button">🔍 検索する</button>
-    <div id="lookup-results"></div>
-  </div>
-
-  <div class="section-divider">━━━ 従量制パス ━━━</div>
-
-  <div class="card">
-    <div id="pass-issue-form-view">
-      <label for="pass-purchaser-name">購入者名</label>
-      <input id="pass-purchaser-name" type="text" placeholder="重力無太郎">
-
-      <label for="pass-purchaser-birthday">生年月日(任意)</label>
-      <input id="pass-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
-
-      <label>初回チャージ額</label>
-      <div class="amount-grid" id="pass-amount-grid"></div>
-
-      <div class="error" id="pass-issue-error"></div>
-
-      <button class="issue" id="pass-issue-button">パスを発行する</button>
-    </div>
-
-    <div class="result" id="pass-issue-result-view">
-      <div style="text-align:center">
-        <div class="qr"><img id="pass-qr-image" alt="QRコード"></div>
+      <div class="card bonus-card">
+        <h2>🎁 グラゼロ・アタック達成 特典付与</h2>
+        <label for="bonus-purchaser-name">購入者名(ひらがな)</label>
+        <input id="bonus-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
+        <div class="error" id="bonus-message"></div>
+        <button class="grant-bonus" id="bonus-button">🎁 特典を付与する</button>
       </div>
-      <dl>
-        <dt>【購入者名】</dt><dd id="pass-result-name"></dd>
-        <dt>【PassID】</dt><dd id="pass-result-id"></dd>
-        <dt>【初回チャージ額】</dt><dd id="pass-result-amount"></dd>
-      </dl>
-      <div class="url" id="pass-result-url"></div>
-      <button class="again" id="pass-issue-again">続けて発行する</button>
+
+      <div class="card bonus-card">
+        <h2>🎫 次回来店、30分無料クーポン付与</h2>
+        <label for="coupon-purchaser-name">購入者名(ひらがな)</label>
+        <input id="coupon-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
+        <div class="error" id="coupon-message"></div>
+        <button class="grant-coupon" id="coupon-button">🎫 クーポンを付与する</button>
+      </div>
+
+      <div class="card bonus-card">
+        <h2>🔍 URL再案内(ホーム画面アイコン消失・URL紛失時)</h2>
+        <label for="lookup-purchaser-name">購入者名</label>
+        <input id="lookup-purchaser-name" type="text" placeholder="例: 重力無太郎">
+        <label for="lookup-purchaser-birthday">生年月日(任意・同姓同名の絞り込み用)</label>
+        <input id="lookup-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
+        <div class="error" id="lookup-message"></div>
+        <button class="lookup-search" id="lookup-button">🔍 検索する</button>
+        <div id="lookup-results"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="card bonus-card">
-    <h2>💳 従量制パス 追加チャージ</h2>
-    <label for="pass-charge-name">購入者名</label>
-    <input id="pass-charge-name" type="text" placeholder="例: 重力無太郎">
-    <label for="pass-charge-amount">チャージ額(円・1,600円単位、上限なし)</label>
-    <input id="pass-charge-amount" type="number" step="1600" min="1600" placeholder="例: 1600">
-    <div class="error" id="pass-charge-message"></div>
-    <button class="charge-pass" id="pass-charge-button">💳 チャージする</button>
-  </div>
+    <div class="product-column">
+      <div class="product-heading">💰 従量制パス</div>
 
-  <div class="card bonus-card">
-    <h2>⚡ グラゼロ・アタック達成 特典付与(従量制パス)</h2>
-    <label for="pass-bonus-purchaser-name">購入者名</label>
-    <input id="pass-bonus-purchaser-name" type="text" placeholder="例: 重力無太郎">
-    <div class="error" id="pass-bonus-message"></div>
-    <button class="grant-bonus" id="pass-bonus-button">🎁 特典を付与する</button>
+      <div class="card">
+        <div id="pass-issue-form-view">
+          <label for="pass-purchaser-name">購入者名</label>
+          <input id="pass-purchaser-name" type="text" placeholder="重力無太郎">
+
+          <label for="pass-purchaser-birthday">生年月日(任意)</label>
+          <input id="pass-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
+
+          <label>初回チャージ額</label>
+          <div class="amount-grid" id="pass-amount-grid"></div>
+
+          <div class="error" id="pass-issue-error"></div>
+
+          <button class="issue" id="pass-issue-button">パスを発行する</button>
+        </div>
+
+        <div class="result" id="pass-issue-result-view">
+          <div style="text-align:center">
+            <div class="qr"><img id="pass-qr-image" alt="QRコード"></div>
+          </div>
+          <dl>
+            <dt>【購入者名】</dt><dd id="pass-result-name"></dd>
+            <dt>【PassID】</dt><dd id="pass-result-id"></dd>
+            <dt>【初回チャージ額】</dt><dd id="pass-result-amount"></dd>
+          </dl>
+          <div class="url" id="pass-result-url"></div>
+          <button class="again" id="pass-issue-again">続けて発行する</button>
+        </div>
+      </div>
+
+      <div class="card bonus-card">
+        <h2>💳 従量制パス 追加チャージ</h2>
+        <label for="pass-charge-name">購入者名</label>
+        <input id="pass-charge-name" type="text" placeholder="例: 重力無太郎">
+        <label for="pass-charge-amount">チャージ額(円・1,600円単位、上限なし)</label>
+        <input id="pass-charge-amount" type="number" step="1600" min="1600" placeholder="例: 1600">
+        <div class="error" id="pass-charge-message"></div>
+        <button class="charge-pass" id="pass-charge-button">💳 チャージする</button>
+      </div>
+
+      <div class="card bonus-card">
+        <h2>⚡ グラゼロ・アタック達成 特典付与(従量制パス)</h2>
+        <label for="pass-bonus-purchaser-name">購入者名</label>
+        <input id="pass-bonus-purchaser-name" type="text" placeholder="例: 重力無太郎">
+        <div class="error" id="pass-bonus-message"></div>
+        <button class="grant-bonus" id="pass-bonus-button">🎁 特典を付与する</button>
+      </div>
+    </div>
   </div>
 
   <script>
