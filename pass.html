@@ -890,7 +890,7 @@
         var hours = amount / PASS_YEN_PER_HOUR;
         var row = document.createElement('div');
         row.className = 'price-row';
-        row.innerHTML = '<span class="price-yen">' + amount.toLocaleString() + '円</span><span class="price-hours">約' + hours + '時間分</span>';
+        row.innerHTML = '<span class="price-yen">' + amount.toLocaleString() + '円</span><span class="price-hours">' + hours + '時間分</span>';
         grid.appendChild(row);
       });
       $('price-menu-card').style.display = 'block';

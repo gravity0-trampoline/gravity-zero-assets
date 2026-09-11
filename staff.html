@@ -410,7 +410,7 @@
 
           <label>初回チャージ額</label>
           <div class="amount-grid" id="pass-amount-grid"></div>
-          <div class="amount-hint">1,600円 = 約1時間分</div>
+          <div class="amount-hint">15分＝400円　60分＝1,600円</div>
 
           <div class="error" id="pass-issue-error"></div>
 
@@ -437,7 +437,7 @@
         <input id="pass-charge-name" type="text" placeholder="例: 重力無太郎">
         <label for="pass-charge-amount">チャージ額(円・1,600円単位、上限なし)</label>
         <input id="pass-charge-amount" type="number" step="1600" min="1600" placeholder="例: 1600">
-        <div class="amount-hint">1,600円 = 約1時間分</div>
+        <div class="amount-hint">15分＝400円　60分＝1,600円</div>
         <div class="error" id="pass-charge-message"></div>
         <button class="charge-pass" id="pass-charge-button">💳 チャージする</button>
       </div>
@@ -736,7 +736,7 @@
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'amount-option';
-        btn.innerHTML = '<span class="amount-yen">' + amount.toLocaleString() + '円</span><span class="amount-hours">約' + hours + '時間分</span>';
+        btn.innerHTML = '<span class="amount-yen">' + amount.toLocaleString() + '円</span><span class="amount-hours">' + hours + '時間分</span>';
         btn.addEventListener('click', function () {
           selectedInitialChargeAmount = amount;
           Array.prototype.forEach.call(grid.querySelectorAll('.amount-option'), function (b) {
