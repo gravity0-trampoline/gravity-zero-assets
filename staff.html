@@ -181,6 +181,7 @@
     }
     .lookup-item dt { color: #000000; font-weight: 700; margin-top: 6px; }
     .lookup-item dd { margin: 2px 0 0; font-weight: 600; color: #F067A6; }
+    .lookup-item.pass dd { color: #1f7a4d; }
     .lookup-item .url {
       word-break: break-all;
       font-size: 11px;
@@ -451,6 +452,17 @@
         <input id="pass-bonus-purchaser-name" type="text" placeholder="例: 重力無太郎">
         <div class="error" id="pass-bonus-message"></div>
         <button class="grant-bonus" id="pass-bonus-button">🎁 特典を付与する</button>
+      </div>
+
+      <div class="card bonus-card">
+        <h2>🔍 URL再案内(ホーム画面アイコン消失・URL紛失時)</h2>
+        <label for="pass-lookup-purchaser-name">購入者名</label>
+        <input id="pass-lookup-purchaser-name" type="text" placeholder="例: 重力無太郎">
+        <label for="pass-lookup-purchaser-birthday">生年月日(任意・同姓同名の絞り込み用)</label>
+        <input id="pass-lookup-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
+        <div class="error" id="pass-lookup-message"></div>
+        <button class="lookup-search" id="pass-lookup-button">🔍 検索する</button>
+        <div id="pass-lookup-results"></div>
       </div>
     </div>
   </div>
@@ -891,6 +903,83 @@
           $('pass-bonus-button').disabled = false;
           $('pass-bonus-button').textContent = '🎁 特典を付与する';
           setPassBonusMessage(error.message, true);
+        });
+    });
+
+    function passStatusLabel(status) {
+      switch (status) {
+        case 'active': return '利用中';
+        case 'expired': return '期限切れ';
+        default: return status;
+      }
+    }
+
+    function setPassLookupMessage(text, isError) {
+      var el = $('pass-lookup-message');
+      el.className = isError ? 'error' : 'success';
+      el.textContent = text;
+    }
+
+    function renderPassLookupResults(passes) {
+      var container = $('pass-lookup-results');
+      container.innerHTML = '';
+
+      passes.forEach(function (pass) {
+        var item = document.createElement('div');
+        item.className = 'lookup-item pass';
+
+        var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(pass.passUrl);
+
+        item.innerHTML =
+          '<div class="qr-row">' +
+            '<img src="' + qrUrl + '" alt="QRコード">' +
+            '<dl>' +
+              '<dt>【購入者名】</dt><dd>' + pass.purchaserName + ' 様</dd>' +
+              '<dt>【PassID】</dt><dd>' + pass.passId + '</dd>' +
+              '<dt>【状態】</dt><dd>' + passStatusLabel(pass.status) + '(残高' + Number(pass.remainingAmount).toLocaleString() + '円)</dd>' +
+              '<dt>【有効期限】</dt><dd>' + (pass.expiryDate ? formatDate(pass.expiryDate) + 'まで' : '未確定(未利用)') + '</dd>' +
+            '</dl>' +
+          '</div>' +
+          '<div class="url">' + pass.passUrl + '</div>' +
+          '<button class="copy-url" type="button">URLをコピー</button>';
+
+        var copyButton = item.querySelector('.copy-url');
+        copyButton.addEventListener('click', function () {
+          navigator.clipboard.writeText(pass.passUrl).then(function () {
+            var original = copyButton.textContent;
+            copyButton.textContent = 'コピーしました';
+            setTimeout(function () { copyButton.textContent = original; }, 1500);
+          });
+        });
+
+        container.appendChild(item);
+      });
+    }
+
+    $('pass-lookup-button').addEventListener('click', function () {
+      var name = $('pass-lookup-purchaser-name').value.trim();
+      var birthday = $('pass-lookup-purchaser-birthday').value.trim();
+      setPassLookupMessage('', false);
+      $('pass-lookup-results').innerHTML = '';
+
+      if (!name) {
+        setPassLookupMessage('購入者名を入力してください。', true);
+        return;
+      }
+
+      $('pass-lookup-button').disabled = true;
+      $('pass-lookup-button').textContent = '検索中...';
+
+      apiCall('lookupPass', { name: name, birthday: birthday })
+        .then(function (result) {
+          $('pass-lookup-button').disabled = false;
+          $('pass-lookup-button').textContent = '🔍 検索する';
+          renderPassLookupResults(result.passes);
+        })
+        .catch(function (error) {
+          $('pass-lookup-button').disabled = false;
+          $('pass-lookup-button').textContent = '🔍 検索する';
+          setPassLookupMessage(error.message, true);
         });
     });
   </script>
