@@ -412,6 +412,9 @@
           <div class="amount-grid" id="pass-amount-grid"></div>
           <div class="amount-hint">15分＝400円　60分＝1,600円</div>
 
+          <label for="pass-issue-custom-amount">それ以上の金額(任意・1,600円単位)</label>
+          <input id="pass-issue-custom-amount" type="number" step="1600" min="3200" placeholder="例: 8000">
+
           <div class="error" id="pass-issue-error"></div>
 
           <button class="issue" id="pass-issue-button">パスを発行する</button>
@@ -719,11 +722,11 @@
 
     // ---- 従量制パス(usage-based-pass-spec.md参照) ----
 
-    // 選択肢が多すぎるとお客さんが迷うため、8段階(4,800〜16,000円)の全てを
-    // ボタンにするのではなく、松竹梅の3段階に絞って提示する(バックエンドの
-    // issuePass自体は引き続き1,600円単位で4,800〜16,000円の間を受け付けるが、
-    // このUIではその中から選びやすい3点だけをボタンとして見せる)。
-    var PASS_INITIAL_CHARGE_AMOUNTS = [4800, 9600, 16000];
+    // 選択肢が多すぎるとお客さんが迷うため、松竹梅の3段階をボタンで提示し、
+    // それ以上の金額が欲しい場合は下の「それ以上の金額」欄に直接入力できる
+    // ようにする(バックエンドのissuePass自体は3,200円以上・1,600円単位で
+    // あれば上限なく受け付ける。2026-09-11変更)。
+    var PASS_INITIAL_CHARGE_AMOUNTS = [3200, 4800, 6400];
     // 消費レート(15分400円)より、1,600円 = 1時間で固定的に換算できる。
     var PASS_YEN_PER_HOUR = 1600;
     var selectedInitialChargeAmount = null;
@@ -739,6 +742,7 @@
         btn.innerHTML = '<span class="amount-yen">' + amount.toLocaleString() + '円</span><span class="amount-hours">' + hours + '時間分</span>';
         btn.addEventListener('click', function () {
           selectedInitialChargeAmount = amount;
+          $('pass-issue-custom-amount').value = '';
           Array.prototype.forEach.call(grid.querySelectorAll('.amount-option'), function (b) {
             b.classList.remove('selected');
           });
@@ -748,6 +752,16 @@
       });
     }
     renderPassAmountGrid();
+
+    // 「それ以上の金額」欄に入力があれば、プリセットボタンの選択を解除する
+    // (どちらが使われるか分かりやすくするため)。
+    $('pass-issue-custom-amount').addEventListener('input', function () {
+      if ($('pass-issue-custom-amount').value.trim() === '') return;
+      selectedInitialChargeAmount = null;
+      Array.prototype.forEach.call($('pass-amount-grid').querySelectorAll('.amount-option'), function (b) {
+        b.classList.remove('selected');
+      });
+    });
 
     function showPassIssueResult(pass) {
       $('pass-issue-form-view').style.display = 'none';
@@ -762,6 +776,7 @@
     function resetPassIssueForm() {
       $('pass-purchaser-name').value = '';
       $('pass-purchaser-birthday').value = '';
+      $('pass-issue-custom-amount').value = '';
       $('pass-issue-error').textContent = '';
       selectedInitialChargeAmount = null;
       renderPassAmountGrid();
@@ -774,21 +789,23 @@
     $('pass-issue-button').addEventListener('click', function () {
       var name = $('pass-purchaser-name').value.trim();
       var birthday = $('pass-purchaser-birthday').value.trim();
+      var customAmount = Number($('pass-issue-custom-amount').value);
+      var amount = customAmount || selectedInitialChargeAmount;
       $('pass-issue-error').textContent = '';
 
       if (!name) {
         $('pass-issue-error').textContent = '購入者名を入力してください。';
         return;
       }
-      if (!selectedInitialChargeAmount) {
-        $('pass-issue-error').textContent = '初回チャージ額を選択してください。';
+      if (!amount) {
+        $('pass-issue-error').textContent = '初回チャージ額を選択するか、それ以上の金額を入力してください。';
         return;
       }
 
       $('pass-issue-button').disabled = true;
       $('pass-issue-button').textContent = '発行中...';
 
-      apiCall('issuePass', { name: name, birthday: birthday, amount: selectedInitialChargeAmount }, { idempotent: true })
+      apiCall('issuePass', { name: name, birthday: birthday, amount: amount }, { idempotent: true })
         .then(function (pass) {
           showPassIssueResult(pass);
         })

@@ -456,7 +456,7 @@
   <div class="card" id="price-menu-card" style="display:none">
     <div class="price-menu-lead">従量制パスの料金案内です。<br>スタッフまでお声がけください。</div>
     <div class="price-grid" id="price-grid"></div>
-    <div class="price-hint">お手持ちの残高に応じて、その都度15分単位(15/30/45/60分)で自由に消費できます</div>
+    <div class="price-hint">上記より多い金額でもチャージできます。スタッフにお申し付けください。<br>お手持ちの残高に応じて、その都度15分単位(15/30/45/60分)で自由に消費できます</div>
   </div>
 
   <div class="card" id="main-card">
@@ -880,7 +880,7 @@
 
     // staff.html側のPASS_INITIAL_CHARGE_AMOUNTS/PASS_YEN_PER_HOURと同じ値
     // (選択肢を絞った松竹梅の3段階。金額だけでは目安がつかないため時間も併記する)。
-    var PASS_PRICE_TIERS = [4800, 9600, 16000];
+    var PASS_PRICE_TIERS = [3200, 4800, 6400];
     var PASS_YEN_PER_HOUR = 1600;
 
     function renderPriceMenu() {
