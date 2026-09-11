@@ -352,7 +352,7 @@
 
           <div class="error" id="form-error"></div>
 
-          <button class="issue" id="issue-button">発行する</button>
+          <button class="issue" id="issue-button">回数券を発行する</button>
         </div>
 
         <div class="result" id="result-view">
@@ -541,7 +541,7 @@
       $('result-view').className = 'result';
       $('form-view').style.display = 'block';
       $('issue-button').disabled = false;
-      $('issue-button').textContent = '発行する';
+      $('issue-button').textContent = '回数券を発行する';
     }
 
     $('issue-button').addEventListener('click', function () {
@@ -564,7 +564,7 @@
         .catch(function (error) {
           $('form-error').textContent = error.message;
           $('issue-button').disabled = false;
-          $('issue-button').textContent = '発行する';
+          $('issue-button').textContent = '回数券を発行する';
         });
     });
 
