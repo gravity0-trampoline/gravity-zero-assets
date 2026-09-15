@@ -181,6 +181,7 @@
     }
     .lookup-item dt { color: #000000; font-weight: 700; margin-top: 6px; }
     .lookup-item dd { margin: 2px 0 0; font-weight: 600; color: #F067A6; }
+    .lookup-item.pass dd { color: #1f7a4d; }
     .lookup-item .url {
       word-break: break-all;
       font-size: 11px;
@@ -242,63 +243,228 @@
       margin-top: 16px;
       cursor: pointer;
     }
+    /* PC等の横幅が確保できる画面では回数券/従量制パスを2カラムで横並びにし、
+       スマホ等の狭い画面ではauto-fitにより自動的に1カラムへ戻る
+       (grid-template-columnsの各トラックがminmax(360px, 1fr)を満たせなくなった
+       時点で折り返される)。 */
+    .product-grid {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 8px 32px;
+      align-items: start;
+    }
+    .product-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 28px;
+      border-radius: 24px;
+    }
+    .product-column.tickets {
+      background: #ffb3d6;
+    }
+    .product-column.pass {
+      background: #9fe3bf;
+    }
+    .product-heading {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 0 18px;
+      text-align: center;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+    .product-heading.tickets {
+      color: #d6337e;
+    }
+    .product-heading.pass {
+      color: #1f7a4d;
+    }
+    .amount-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    button.amount-option {
+      padding: 12px 4px;
+      border-radius: 10px;
+      border: 2px solid #2f9e6b;
+      background: #ffffff;
+      color: #2f9e6b;
+      cursor: pointer;
+      line-height: 1.3;
+    }
+    button.amount-option .amount-yen {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    button.amount-option .amount-hours {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    button.amount-option.selected {
+      background: #2f9e6b;
+      color: #ffffff;
+    }
+    .amount-hint {
+      font-size: 12px;
+      color: #666666;
+      margin: 0 0 18px;
+      text-align: center;
+    }
+    button.charge-pass {
+      width: 100%;
+      padding: 14px 0;
+      border-radius: 12px;
+      border: none;
+      background: #2f9e6b;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.charge-pass:disabled {
+      background: #ffffff;
+      color: #4169e1;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
-  <h1>GRAVITY ZERO 回数券発行(スタッフ用)</h1>
+  <h1>GRAVITY ZERO スタッフ用管理画面</h1>
 
-  <div class="card">
-    <div id="form-view">
-      <label for="purchaser-name">購入者名</label>
-      <input id="purchaser-name" type="text" placeholder="重力無太郎">
+  <div class="product-grid">
+    <div class="product-column tickets">
+      <div class="product-heading tickets">🎫 回数券</div>
 
-      <label for="purchaser-phone">生年月日(任意)</label>
-      <input id="purchaser-phone" type="text" placeholder="yyyy/mm/dd">
+      <div class="card">
+        <div id="form-view">
+          <label for="purchaser-name">購入者名</label>
+          <input id="purchaser-name" type="text" placeholder="重力無太郎">
 
-      <div class="error" id="form-error"></div>
+          <label for="purchaser-phone">生年月日(任意)</label>
+          <input id="purchaser-phone" type="text" placeholder="yyyy/mm/dd">
 
-      <button class="issue" id="issue-button">発行する</button>
-    </div>
+          <div class="error" id="form-error"></div>
 
-    <div class="result" id="result-view">
-      <div style="text-align:center">
-        <div class="qr"><img id="qr-image" alt="QRコード"></div>
+          <button class="issue" id="issue-button">回数券を発行する</button>
+        </div>
+
+        <div class="result" id="result-view">
+          <div style="text-align:center">
+            <div class="qr"><img id="qr-image" alt="QRコード"></div>
+          </div>
+          <dl>
+            <dt>【購入者名】</dt><dd id="result-name"></dd>
+            <dt>【TicketID】</dt><dd id="result-id"></dd>
+            <dt>【回数 / 有効期限】</dt><dd id="result-count-expiry"></dd>
+          </dl>
+          <div class="url" id="result-url"></div>
+          <button class="again" id="issue-again">続けて発行する</button>
+        </div>
       </div>
-      <dl>
-        <dt>【購入者名】</dt><dd id="result-name"></dd>
-        <dt>【TicketID】</dt><dd id="result-id"></dd>
-        <dt>【回数 / 有効期限】</dt><dd id="result-count-expiry"></dd>
-      </dl>
-      <div class="url" id="result-url"></div>
-      <button class="again" id="issue-again">続けて発行する</button>
+
+      <div class="card bonus-card">
+        <h2>🎁 グラゼロ・アタック達成 特典付与</h2>
+        <label for="bonus-purchaser-name">購入者名(ひらがな)</label>
+        <input id="bonus-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
+        <div class="error" id="bonus-message"></div>
+        <button class="grant-bonus" id="bonus-button">🎁 特典を付与する</button>
+      </div>
+
+      <div class="card bonus-card">
+        <h2>🎫 次回来店、30分無料クーポン付与</h2>
+        <label for="coupon-purchaser-name">購入者名(ひらがな)</label>
+        <input id="coupon-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
+        <div class="error" id="coupon-message"></div>
+        <button class="grant-coupon" id="coupon-button">🎫 クーポンを付与する</button>
+      </div>
+
+      <div class="card bonus-card">
+        <h2>🔍 URL再案内(ホーム画面アイコン消失・URL紛失時)</h2>
+        <label for="lookup-purchaser-name">購入者名</label>
+        <input id="lookup-purchaser-name" type="text" placeholder="例: 重力無太郎">
+        <label for="lookup-purchaser-birthday">生年月日(任意・同姓同名の絞り込み用)</label>
+        <input id="lookup-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
+        <div class="error" id="lookup-message"></div>
+        <button class="lookup-search" id="lookup-button">🔍 検索する</button>
+        <div id="lookup-results"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="card bonus-card">
-    <h2>🎁 グラゼロ・アタック達成 特典付与</h2>
-    <label for="bonus-purchaser-name">購入者名(ひらがな)</label>
-    <input id="bonus-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
-    <div class="error" id="bonus-message"></div>
-    <button class="grant-bonus" id="bonus-button">🎁 特典を付与する</button>
-  </div>
+    <div class="product-column pass">
+      <div class="product-heading pass">💰 従量制パス</div>
 
-  <div class="card bonus-card">
-    <h2>🎫 次回来店、30分無料クーポン付与</h2>
-    <label for="coupon-purchaser-name">購入者名(ひらがな)</label>
-    <input id="coupon-purchaser-name" type="text" placeholder="例: じゅうりょくむたろう">
-    <div class="error" id="coupon-message"></div>
-    <button class="grant-coupon" id="coupon-button">🎫 クーポンを付与する</button>
-  </div>
+      <div class="card">
+        <div id="pass-issue-form-view">
+          <label for="pass-purchaser-name">購入者名</label>
+          <input id="pass-purchaser-name" type="text" placeholder="重力無太郎">
 
-  <div class="card bonus-card">
-    <h2>🔍 URL再案内(ホーム画面アイコン消失・URL紛失時)</h2>
-    <label for="lookup-purchaser-name">購入者名</label>
-    <input id="lookup-purchaser-name" type="text" placeholder="例: 重力無太郎">
-    <label for="lookup-purchaser-birthday">生年月日(任意・同姓同名の絞り込み用)</label>
-    <input id="lookup-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
-    <div class="error" id="lookup-message"></div>
-    <button class="lookup-search" id="lookup-button">🔍 検索する</button>
-    <div id="lookup-results"></div>
+          <label for="pass-purchaser-birthday">生年月日(任意)</label>
+          <input id="pass-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
+
+          <label>初回チャージ額</label>
+          <div class="amount-grid" id="pass-amount-grid"></div>
+          <div class="amount-hint">15分＝400円　60分＝1,600円</div>
+
+          <label for="pass-issue-custom-amount">それ以上の金額(任意・400円単位)</label>
+          <input id="pass-issue-custom-amount" type="number" step="400" min="3200" placeholder="例: 8000">
+
+          <div class="error" id="pass-issue-error"></div>
+
+          <button class="issue" id="pass-issue-button">パスを発行する</button>
+        </div>
+
+        <div class="result" id="pass-issue-result-view">
+          <div style="text-align:center">
+            <div class="qr"><img id="pass-qr-image" alt="QRコード"></div>
+          </div>
+          <dl>
+            <dt>【購入者名】</dt><dd id="pass-result-name"></dd>
+            <dt>【PassID】</dt><dd id="pass-result-id"></dd>
+            <dt>【初回チャージ額】</dt><dd id="pass-result-amount"></dd>
+          </dl>
+          <div class="url" id="pass-result-url"></div>
+          <button class="again" id="pass-issue-again">続けて発行する</button>
+        </div>
+      </div>
+
+      <div class="card bonus-card">
+        <h2>💳 従量制パス 追加チャージ</h2>
+        <label for="pass-charge-name">購入者名</label>
+        <input id="pass-charge-name" type="text" placeholder="例: 重力無太郎">
+        <label for="pass-charge-amount">チャージ額(円・400円単位、上限なし)</label>
+        <input id="pass-charge-amount" type="number" step="400" min="400" placeholder="例: 1600">
+        <div class="amount-hint">15分＝400円　60分＝1,600円</div>
+        <div class="error" id="pass-charge-message"></div>
+        <button class="charge-pass" id="pass-charge-button">💳 チャージする</button>
+      </div>
+
+      <div class="card bonus-card">
+        <h2>⚡ グラゼロ・アタック達成 特典付与(従量制パス)</h2>
+        <label for="pass-bonus-purchaser-name">購入者名</label>
+        <input id="pass-bonus-purchaser-name" type="text" placeholder="例: 重力無太郎">
+        <div class="error" id="pass-bonus-message"></div>
+        <button class="grant-bonus" id="pass-bonus-button">🎁 特典を付与する</button>
+      </div>
+
+      <div class="card bonus-card">
+        <h2>🔍 URL再案内(ホーム画面アイコン消失・URL紛失時)</h2>
+        <label for="pass-lookup-purchaser-name">購入者名</label>
+        <input id="pass-lookup-purchaser-name" type="text" placeholder="例: 重力無太郎">
+        <label for="pass-lookup-purchaser-birthday">生年月日(任意・同姓同名の絞り込み用)</label>
+        <input id="pass-lookup-purchaser-birthday" type="text" placeholder="yyyy/mm/dd">
+        <div class="error" id="pass-lookup-message"></div>
+        <button class="lookup-search" id="pass-lookup-button">🔍 検索する</button>
+        <div id="pass-lookup-results"></div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -387,7 +553,7 @@
       $('result-view').className = 'result';
       $('form-view').style.display = 'block';
       $('issue-button').disabled = false;
-      $('issue-button').textContent = '発行する';
+      $('issue-button').textContent = '回数券を発行する';
     }
 
     $('issue-button').addEventListener('click', function () {
@@ -410,7 +576,7 @@
         .catch(function (error) {
           $('form-error').textContent = error.message;
           $('issue-button').disabled = false;
-          $('issue-button').textContent = '発行する';
+          $('issue-button').textContent = '回数券を発行する';
         });
     });
 
@@ -563,6 +729,257 @@
           $('lookup-button').disabled = false;
           $('lookup-button').textContent = '🔍 検索する';
           setLookupMessage(error.message, true);
+        });
+    });
+
+    // ---- 従量制パス(usage-based-pass-spec.md参照) ----
+
+    // 選択肢が多すぎるとお客さんが迷うため、松竹梅の3段階をボタンで提示し、
+    // それ以上の金額が欲しい場合は下の「それ以上の金額」欄に直接入力できる
+    // ようにする(バックエンドのissuePass自体は3,200円以上・1,600円単位で
+    // あれば上限なく受け付ける。2026-09-11変更)。
+    var PASS_INITIAL_CHARGE_AMOUNTS = [3200, 4800, 6400];
+    // 消費レート(15分400円)より、1,600円 = 1時間で固定的に換算できる。
+    var PASS_YEN_PER_HOUR = 1600;
+    var selectedInitialChargeAmount = null;
+
+    function renderPassAmountGrid() {
+      var grid = $('pass-amount-grid');
+      grid.innerHTML = '';
+      PASS_INITIAL_CHARGE_AMOUNTS.forEach(function (amount) {
+        var hours = amount / PASS_YEN_PER_HOUR;
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'amount-option';
+        btn.innerHTML = '<span class="amount-yen">' + amount.toLocaleString() + '円</span><span class="amount-hours">' + hours + '時間分</span>';
+        btn.addEventListener('click', function () {
+          selectedInitialChargeAmount = amount;
+          $('pass-issue-custom-amount').value = '';
+          Array.prototype.forEach.call(grid.querySelectorAll('.amount-option'), function (b) {
+            b.classList.remove('selected');
+          });
+          btn.classList.add('selected');
+        });
+        grid.appendChild(btn);
+      });
+    }
+    renderPassAmountGrid();
+
+    // 「それ以上の金額」欄に入力があれば、プリセットボタンの選択を解除する
+    // (どちらが使われるか分かりやすくするため)。
+    $('pass-issue-custom-amount').addEventListener('input', function () {
+      if ($('pass-issue-custom-amount').value.trim() === '') return;
+      selectedInitialChargeAmount = null;
+      Array.prototype.forEach.call($('pass-amount-grid').querySelectorAll('.amount-option'), function (b) {
+        b.classList.remove('selected');
+      });
+    });
+
+    function showPassIssueResult(pass) {
+      $('pass-issue-form-view').style.display = 'none';
+      $('pass-issue-result-view').className = 'result show';
+      $('pass-qr-image').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(pass.passUrl);
+      $('pass-result-name').textContent = pass.purchaserName + ' 様';
+      $('pass-result-id').textContent = pass.passId;
+      $('pass-result-amount').textContent = Number(pass.remainingAmount).toLocaleString() + '円';
+      $('pass-result-url').textContent = pass.passUrl;
+    }
+
+    function resetPassIssueForm() {
+      $('pass-purchaser-name').value = '';
+      $('pass-purchaser-birthday').value = '';
+      $('pass-issue-custom-amount').value = '';
+      $('pass-issue-error').textContent = '';
+      selectedInitialChargeAmount = null;
+      renderPassAmountGrid();
+      $('pass-issue-result-view').className = 'result';
+      $('pass-issue-form-view').style.display = 'block';
+      $('pass-issue-button').disabled = false;
+      $('pass-issue-button').textContent = 'パスを発行する';
+    }
+
+    $('pass-issue-button').addEventListener('click', function () {
+      var name = $('pass-purchaser-name').value.trim();
+      var birthday = $('pass-purchaser-birthday').value.trim();
+      var customAmount = Number($('pass-issue-custom-amount').value);
+      var amount = customAmount || selectedInitialChargeAmount;
+      $('pass-issue-error').textContent = '';
+
+      if (!name) {
+        $('pass-issue-error').textContent = '購入者名を入力してください。';
+        return;
+      }
+      if (!amount) {
+        $('pass-issue-error').textContent = '初回チャージ額を選択するか、それ以上の金額を入力してください。';
+        return;
+      }
+
+      $('pass-issue-button').disabled = true;
+      $('pass-issue-button').textContent = '発行中...';
+
+      apiCall('issuePass', { name: name, birthday: birthday, amount: amount }, { idempotent: true })
+        .then(function (pass) {
+          showPassIssueResult(pass);
+        })
+        .catch(function (error) {
+          $('pass-issue-error').textContent = error.message;
+          $('pass-issue-button').disabled = false;
+          $('pass-issue-button').textContent = 'パスを発行する';
+        });
+    });
+
+    $('pass-issue-again').addEventListener('click', resetPassIssueForm);
+
+    function setPassChargeMessage(text, isError) {
+      var el = $('pass-charge-message');
+      el.className = isError ? 'error' : 'success';
+      el.textContent = text;
+    }
+
+    $('pass-charge-button').addEventListener('click', function () {
+      var name = $('pass-charge-name').value.trim();
+      var amount = Number($('pass-charge-amount').value);
+      setPassChargeMessage('', false);
+
+      if (!name) {
+        setPassChargeMessage('購入者名を入力してください。', true);
+        return;
+      }
+      if (!amount) {
+        setPassChargeMessage('チャージ額を入力してください。', true);
+        return;
+      }
+
+      $('pass-charge-button').disabled = true;
+      $('pass-charge-button').textContent = '処理中...';
+
+      apiCall('chargePassByName', { name: name, amount: amount }, { idempotent: true })
+        .then(function (result) {
+          $('pass-charge-button').disabled = false;
+          $('pass-charge-button').textContent = '💳 チャージする';
+          setPassChargeMessage(
+            name + '様に' + amount.toLocaleString() + '円チャージしました(残高: ' + Number(result.remainingAmount).toLocaleString() + '円)。',
+            false
+          );
+          $('pass-charge-amount').value = '';
+        })
+        .catch(function (error) {
+          $('pass-charge-button').disabled = false;
+          $('pass-charge-button').textContent = '💳 チャージする';
+          setPassChargeMessage(error.message, true);
+        });
+    });
+
+    function setPassBonusMessage(text, isError) {
+      var el = $('pass-bonus-message');
+      el.className = isError ? 'error' : 'success';
+      el.textContent = text;
+    }
+
+    $('pass-bonus-button').addEventListener('click', function () {
+      var purchaserName = $('pass-bonus-purchaser-name').value.trim();
+      setPassBonusMessage('', false);
+
+      if (!purchaserName) {
+        setPassBonusMessage('購入者名を入力してください。', true);
+        return;
+      }
+
+      $('pass-bonus-button').disabled = true;
+      $('pass-bonus-button').textContent = '処理中...';
+
+      apiCall('grantSpeedClearBonus', { name: purchaserName })
+        .then(function (result) {
+          $('pass-bonus-button').disabled = false;
+          $('pass-bonus-button').textContent = '🎁 特典を付与する';
+          if (result.alreadyGranted) {
+            setPassBonusMessage(result.purchaserName + '様は既に特典付与済みです。', false);
+          } else {
+            setPassBonusMessage(result.purchaserName + '様への特典付与が完了しました。', false);
+            $('pass-bonus-purchaser-name').value = '';
+          }
+        })
+        .catch(function (error) {
+          $('pass-bonus-button').disabled = false;
+          $('pass-bonus-button').textContent = '🎁 特典を付与する';
+          setPassBonusMessage(error.message, true);
+        });
+    });
+
+    function passStatusLabel(status) {
+      switch (status) {
+        case 'active': return '利用中';
+        case 'expired': return '期限切れ';
+        default: return status;
+      }
+    }
+
+    function setPassLookupMessage(text, isError) {
+      var el = $('pass-lookup-message');
+      el.className = isError ? 'error' : 'success';
+      el.textContent = text;
+    }
+
+    function renderPassLookupResults(passes) {
+      var container = $('pass-lookup-results');
+      container.innerHTML = '';
+
+      passes.forEach(function (pass) {
+        var item = document.createElement('div');
+        item.className = 'lookup-item pass';
+
+        var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(pass.passUrl);
+
+        item.innerHTML =
+          '<div class="qr-row">' +
+            '<img src="' + qrUrl + '" alt="QRコード">' +
+            '<dl>' +
+              '<dt>【購入者名】</dt><dd>' + pass.purchaserName + ' 様</dd>' +
+              '<dt>【PassID】</dt><dd>' + pass.passId + '</dd>' +
+              '<dt>【状態】</dt><dd>' + passStatusLabel(pass.status) + '(残高' + Number(pass.remainingAmount).toLocaleString() + '円)</dd>' +
+              '<dt>【有効期限】</dt><dd>' + (pass.expiryDate ? formatDate(pass.expiryDate) + 'まで' : '未確定(未利用)') + '</dd>' +
+            '</dl>' +
+          '</div>' +
+          '<div class="url">' + pass.passUrl + '</div>' +
+          '<button class="copy-url" type="button">URLをコピー</button>';
+
+        var copyButton = item.querySelector('.copy-url');
+        copyButton.addEventListener('click', function () {
+          navigator.clipboard.writeText(pass.passUrl).then(function () {
+            var original = copyButton.textContent;
+            copyButton.textContent = 'コピーしました';
+            setTimeout(function () { copyButton.textContent = original; }, 1500);
+          });
+        });
+
+        container.appendChild(item);
+      });
+    }
+
+    $('pass-lookup-button').addEventListener('click', function () {
+      var name = $('pass-lookup-purchaser-name').value.trim();
+      var birthday = $('pass-lookup-purchaser-birthday').value.trim();
+      setPassLookupMessage('', false);
+      $('pass-lookup-results').innerHTML = '';
+
+      if (!name) {
+        setPassLookupMessage('購入者名を入力してください。', true);
+        return;
+      }
+
+      $('pass-lookup-button').disabled = true;
+      $('pass-lookup-button').textContent = '検索中...';
+
+      apiCall('lookupPass', { name: name, birthday: birthday })
+        .then(function (result) {
+          $('pass-lookup-button').disabled = false;
+          $('pass-lookup-button').textContent = '🔍 検索する';
+          renderPassLookupResults(result.passes);
+        })
+        .catch(function (error) {
+          $('pass-lookup-button').disabled = false;
+          $('pass-lookup-button').textContent = '🔍 検索する';
+          setPassLookupMessage(error.message, true);
         });
     });
   </script>
