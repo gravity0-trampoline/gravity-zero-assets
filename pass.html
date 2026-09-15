@@ -125,6 +125,12 @@
     .balance-amount .balance-unit {
       font-size: 0.5em;
     }
+    .balance-minutes {
+      font-size: 20px;
+      font-weight: 700;
+      color: #7a6a3a;
+      margin: 2px 0 0;
+    }
     .speed-clear-progress {
       font-size: 13px;
       font-weight: 700;
@@ -455,6 +461,7 @@
 
   <div class="card" id="main-card">
     <div class="balance-amount" id="balance-amount">-</div>
+    <div class="balance-minutes" id="balance-minutes"></div>
     <div class="balance-label">エンジョイ出来ます!</div>
 
     <div class="speed-clear-progress" id="speed-clear-progress"></div>
@@ -916,6 +923,7 @@
       if (hours > 0) html += hours + '<span class="balance-unit">時間</span>';
       if (hours === 0 || mins > 0) html += mins + '<span class="balance-unit">分</span>';
       $('balance-amount').innerHTML = html;
+      $('balance-minutes').textContent = hours > 0 ? '(' + minutes + '分)' : '';
     }
 
     function renderStatus(status) {
