@@ -119,7 +119,10 @@
       font-weight: 700;
       line-height: 1;
       margin: 4px 0 20px;
-      color: #8b6508;
+      color: #916f08;
+    }
+    .balance-amount .balance-unit {
+      font-size: 0.5em;
     }
     .speed-clear-progress {
       font-size: 13px;
@@ -903,18 +906,19 @@
       el.textContent = status.purchaserName ? toKatakana(status.purchaserName) + ' 様' : '';
     }
 
-    function formatRemainingDuration_(status) {
+    function renderBalanceAmount_(status) {
       var minutes = (Number(status.remainingAmount || 0) / status.rate15Min) * 15;
       minutes = Math.max(0, Math.round(minutes));
       var hours = Math.floor(minutes / 60);
       var mins = minutes % 60;
-      if (hours > 0 && mins > 0) return hours + '時間' + mins + '分';
-      if (hours > 0) return hours + '時間';
-      return mins + '分';
+      var html = '';
+      if (hours > 0) html += hours + '<span class="balance-unit">時間</span>';
+      if (hours === 0 || mins > 0) html += mins + '<span class="balance-unit">分</span>';
+      $('balance-amount').innerHTML = html;
     }
 
     function renderStatus(status) {
-      $('balance-amount').textContent = formatRemainingDuration_(status);
+      renderBalanceAmount_(status);
       renderButtons(status);
       renderPurchaserName(status);
       renderExpiryInfo(status);
