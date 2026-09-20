@@ -220,6 +220,22 @@
       color: #777777;
       text-shadow: none;
     }
+    .claim-button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 12px 0;
+      border-radius: 12px;
+      border: 1px solid #a8790a;
+      background: linear-gradient(135deg, #fff3c4 0%, #f4d160 20%, #d4a017 50%, #f4d160 80%, #fff3c4 100%);
+      color: #4a2f00;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .claim-button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
     .expiry-info {
       font-size: 14px;
       font-weight: 700;
@@ -473,11 +489,13 @@
     <div class="mission-proof" id="mission-proof" style="display:none">
       <div class="mission-proof-title">🎉 グラゼロ・アタック達成!</div>
       <div class="mission-proof-note" id="mission-proof-note"></div>
+      <button class="claim-button" id="claim-bonus-button" style="display:none">🎁 特典を使う</button>
     </div>
 
     <div class="completion-coupon" id="completion-coupon" style="display:none">
       <div class="completion-coupon-title">🎫 次回来店時 30分無料クーポン</div>
       <div class="completion-coupon-note" id="completion-coupon-note"></div>
+      <button class="claim-button" id="claim-coupon-button" style="display:none">🎫 クーポンを使う</button>
     </div>
 
     <div class="gauge" id="gauge"></div>
@@ -882,43 +900,57 @@
 
     function renderMissionProof(status) {
       var el = $('mission-proof');
+      var button = $('claim-bonus-button');
       if (!status.speedClearAchieved) {
         el.style.display = 'none';
         el.classList.remove('granted');
+        button.style.display = 'none';
         return;
       }
       el.style.display = 'block';
       var note = $('mission-proof-note');
       el.classList.remove('granted', 'expired');
+      button.disabled = false;
+      button.textContent = '🎁 特典を使う';
       if (status.bonusGranted) {
         el.classList.add('granted');
         note.textContent = '特典受け取り済みです';
+        button.style.display = 'none';
       } else if (status.bonusClaimExpired) {
         el.classList.add('expired');
         note.textContent = '特典の受け取り期限が終了しました';
+        button.style.display = 'none';
       } else {
-        note.textContent = '次回、スタッフにこの画面を見せてください' + formatDeadlineSuffix(status.expiryDate);
+        note.textContent = 'ボタンを押して特典を受け取ってください' + formatDeadlineSuffix(status.expiryDate);
+        button.style.display = 'block';
       }
     }
 
     function renderCompletionCoupon(status) {
       var el = $('completion-coupon');
+      var button = $('claim-coupon-button');
       if (status.status !== 'completed') {
         el.style.display = 'none';
         el.classList.remove('granted', 'expired');
+        button.style.display = 'none';
         return;
       }
       el.style.display = 'block';
       var note = $('completion-coupon-note');
       el.classList.remove('granted', 'expired');
+      button.disabled = false;
+      button.textContent = '🎫 クーポンを使う';
       if (status.completionCouponGranted) {
         el.classList.add('granted');
         note.textContent = 'クーポン利用済みです';
+        button.style.display = 'none';
       } else if (status.completionCouponClaimExpired) {
         el.classList.add('expired');
         note.textContent = 'クーポンの有効期限が終了しました';
+        button.style.display = 'none';
       } else {
-        note.textContent = '次回のご来店時にスタッフにこの画面を見せてください' + formatDeadlineSuffix(status.completionCouponDeadline);
+        note.textContent = 'ボタンを押してクーポンを受け取ってください' + formatDeadlineSuffix(status.completionCouponDeadline);
+        button.style.display = 'block';
       }
     }
 
@@ -1055,6 +1087,31 @@
           hideLoading();
           showError(error.message);
         });
+    });
+
+    function claimAndRefresh(action, button, defaultLabel) {
+      button.disabled = true;
+      button.textContent = '処理中...';
+      apiCall(action, { tid: ticketId, tk: shareToken }, { idempotent: true })
+        .then(function () {
+          return apiCall('status', { tid: ticketId, tk: shareToken });
+        })
+        .then(function (status) {
+          renderStatus(status);
+        })
+        .catch(function (error) {
+          button.disabled = false;
+          button.textContent = defaultLabel;
+          showError(error.message);
+        });
+    }
+
+    $('claim-bonus-button').addEventListener('click', function () {
+      claimAndRefresh('claimBonus', $('claim-bonus-button'), '🎁 特典を使う');
+    });
+
+    $('claim-coupon-button').addEventListener('click', function () {
+      claimAndRefresh('claimCompletionCoupon', $('claim-coupon-button'), '🎫 クーポンを使う');
     });
 
     if (ticketId && localStorage.getItem('gzeroVisited:' + ticketId) === 'true') {
