@@ -102,6 +102,10 @@
     .bonus-card {
       margin-top: 16px;
     }
+    /* URL再案内カードは、同じ色のカードが並ぶ中で見分けやすいよう背景を薄いグレーにする。 */
+    .lookup-card {
+      background: #cccccc;
+    }
     .bonus-card h2 {
       font-size: 15px;
       color: #000000;
@@ -386,7 +390,7 @@
         <button class="grant-coupon" id="coupon-button">🎫 クーポンを付与する</button>
       </div>
 
-      <div class="card bonus-card">
+      <div class="card bonus-card lookup-card">
         <h2>🔍 URL再案内(ホーム画面アイコン消失・URL紛失時)</h2>
         <label for="lookup-purchaser-name">購入者名</label>
         <input id="lookup-purchaser-name" type="text" placeholder="例: 重力無太郎">
@@ -454,7 +458,7 @@
         <button class="grant-bonus" id="pass-bonus-button">🎁 特典を付与する</button>
       </div>
 
-      <div class="card bonus-card">
+      <div class="card bonus-card lookup-card">
         <h2>🔍 URL再案内(ホーム画面アイコン消失・URL紛失時)</h2>
         <label for="pass-lookup-purchaser-name">購入者名</label>
         <input id="pass-lookup-purchaser-name" type="text" placeholder="例: 重力無太郎">
