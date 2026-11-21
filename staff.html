@@ -338,6 +338,41 @@
       color: #4169e1;
       cursor: not-allowed;
     }
+    /* 追加チャージは最も使用頻度が高いため、他のカードよりひと回り大きく・緑背景で目立たせる。 */
+    .card.charge-card {
+      max-width: 460px;
+      padding: 32px;
+      background: #2f9e6b;
+      border: 3px solid #1f7a4d;
+      box-shadow: 0 0 0 6px rgba(47, 158, 107, 0.15);
+    }
+    .charge-card h2 {
+      font-size: 22px;
+      margin: 0 0 18px;
+      color: #ffffff;
+    }
+    .charge-card label {
+      font-size: 15px;
+      color: #ffffff;
+    }
+    .charge-card input {
+      padding: 16px 16px;
+      font-size: 18px;
+    }
+    .charge-card .amount-hint {
+      font-size: 14px;
+      color: #e5fff0;
+    }
+    .charge-card button.charge-pass {
+      padding: 20px 0;
+      font-size: 20px;
+      background: #ffffff;
+      color: #1f7a4d;
+    }
+    .charge-card button.charge-pass:disabled {
+      background: #e5fff0;
+      color: #4169e1;
+    }
   </style>
 </head>
 <body>
@@ -439,7 +474,7 @@
         </div>
       </div>
 
-      <div class="card bonus-card">
+      <div class="card bonus-card charge-card">
         <h2>💳 従量制パス 追加チャージ</h2>
         <label for="pass-charge-name">購入者名</label>
         <input id="pass-charge-name" type="text" placeholder="例: 重力無太郎">
