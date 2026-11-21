@@ -363,6 +363,16 @@
       font-size: 14px;
       color: #e5fff0;
     }
+    .charge-card button.amount-option {
+      background: #ffffff;
+      border-color: #ffffff;
+      color: #1f7a4d;
+    }
+    .charge-card button.amount-option.selected {
+      background: #1f7a4d;
+      border-color: #ffffff;
+      color: #ffffff;
+    }
     .charge-card button.charge-pass {
       padding: 20px 0;
       font-size: 20px;
@@ -478,9 +488,14 @@
         <h2>💳 従量制パス 追加チャージ</h2>
         <label for="pass-charge-name">購入者名</label>
         <input id="pass-charge-name" type="text" placeholder="例: 重力無太郎">
-        <label for="pass-charge-amount">チャージ額(円・400円単位、上限なし)</label>
-        <input id="pass-charge-amount" type="number" step="400" min="400" placeholder="例: 1600">
+
+        <label>チャージ額</label>
+        <div class="amount-grid" id="pass-charge-amount-grid"></div>
         <div class="amount-hint">15分＝400円　60分＝1,600円</div>
+
+        <label for="pass-charge-custom-amount">それ以上の金額(任意・1,600円単位)</label>
+        <input id="pass-charge-custom-amount" type="number" step="1600" min="3200" placeholder="例: 8000">
+
         <div class="error" id="pass-charge-message"></div>
         <button class="charge-pass" id="pass-charge-button">💳 チャージする</button>
       </div>
@@ -875,9 +890,44 @@
       el.textContent = text;
     }
 
+    // 追加チャージも初回発行額と同じ下限(3,200円)・単位(1,600円)に統一したため
+    // (2026-11-21変更、usage-based-pass-spec.md 2-4節参照)、同じ松竹梅3段階ボタンを使う。
+    var selectedChargeAmount = null;
+
+    function renderPassChargeAmountGrid() {
+      var grid = $('pass-charge-amount-grid');
+      grid.innerHTML = '';
+      PASS_INITIAL_CHARGE_AMOUNTS.forEach(function (amount) {
+        var hours = amount / PASS_YEN_PER_HOUR;
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'amount-option';
+        btn.innerHTML = '<span class="amount-yen">' + amount.toLocaleString() + '円</span><span class="amount-hours">' + hours + '時間分</span>';
+        btn.addEventListener('click', function () {
+          selectedChargeAmount = amount;
+          $('pass-charge-custom-amount').value = '';
+          Array.prototype.forEach.call(grid.querySelectorAll('.amount-option'), function (b) {
+            b.classList.remove('selected');
+          });
+          btn.classList.add('selected');
+        });
+        grid.appendChild(btn);
+      });
+    }
+    renderPassChargeAmountGrid();
+
+    $('pass-charge-custom-amount').addEventListener('input', function () {
+      if ($('pass-charge-custom-amount').value.trim() === '') return;
+      selectedChargeAmount = null;
+      Array.prototype.forEach.call($('pass-charge-amount-grid').querySelectorAll('.amount-option'), function (b) {
+        b.classList.remove('selected');
+      });
+    });
+
     $('pass-charge-button').addEventListener('click', function () {
       var name = $('pass-charge-name').value.trim();
-      var amount = Number($('pass-charge-amount').value);
+      var customAmount = Number($('pass-charge-custom-amount').value);
+      var amount = customAmount || selectedChargeAmount;
       setPassChargeMessage('', false);
 
       if (!name) {
@@ -885,7 +935,7 @@
         return;
       }
       if (!amount) {
-        setPassChargeMessage('チャージ額を入力してください。', true);
+        setPassChargeMessage('チャージ額を選択するか、それ以上の金額を入力してください。', true);
         return;
       }
 
@@ -900,7 +950,9 @@
             name + '様に' + amount.toLocaleString() + '円チャージしました(残高: ' + Number(result.remainingAmount).toLocaleString() + '円)。',
             false
           );
-          $('pass-charge-amount').value = '';
+          $('pass-charge-custom-amount').value = '';
+          selectedChargeAmount = null;
+          renderPassChargeAmountGrid();
         })
         .catch(function (error) {
           $('pass-charge-button').disabled = false;
